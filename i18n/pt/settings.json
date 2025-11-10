@@ -1,0 +1,23 @@
+{
+  "your_did": "O seu DID",
+  "confirm_delete_credentials": "Tem a certeza que quer apagar todas as credenciais?",
+  "delete_credentials": "Apagar todas as credenciais",
+  "delete": "Apagar",
+  "confirm_delete_wallet": "Tem a certeza que quer apagar a sua carteira?",
+  "delete_wallet": "Apagar carteira",
+  "view_did": "Ver DID",
+  "enter_offer_url": "Introduzir URL da oferta de credencial",
+  "accept": "Aceitar",
+  "reject": "Rejeitar",
+  "settings": "Definições",
+  "paste_offer_url": "Cole o URL da oferta de credencial",
+  "enter_pre_approved_code": "Insira o código pré-aprovado (se aplicável)",
+  "issuing": "A emitir...",
+  "issue_credential": "Emitir Credencial",
+  "no_offer_url": "Nenhum URL de oferta fornecido",
+  "no_did_found": "Nenhum DID encontrado",
+  "no_credential_found": "Nenhuma credencial encontrada",
+  "failed_to_fetch_or_parse_offer": "Falha ao carregar ou ao analisar a oferta",
+  "cancel": "Cancelar",
+  "language": "Idioma"
+}

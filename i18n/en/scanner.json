@@ -1,0 +1,20 @@
+{
+  "credential_reader": "Credential Reader",
+  "credential_successfully_issued": "Credential successfully issued!",
+  "error_while_issuing_credential": "Error while issuing the credential!",
+  "invalid_qr_code": "Invalid QR code",
+  "no_did_found": "No DID found!",
+  "no_request_uri": "No request_uri found in the offer URL!",
+  "presentation_success": "Verifiable presentation successfully emitted",
+  "presentation_error": "Error while emitting verifiable presentation",
+  "scan_qr_code_error": "An error occurred while scanning the QR Code. Please try again",
+  "invalid_token_error": "Invalid authentication token. One possible reason is that the same QR Code was scanned more than once.",
+  "requesting_camera_permission": "Requesting camera permission",
+  "camera_no_access": "No access to camera",
+  "accept": "Accept",
+  "reject": "Reject",
+  "loading": "Loading",
+  "verification_success": "Credential successfully verified!",
+  "verification_disclosure_error": "Error while validating selective disclosure presentation",
+  "verification_credential_error": "Error while validating credential"
+}

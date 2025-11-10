@@ -1,0 +1,18 @@
+{
+  "credentials": "Credenciais",
+  "scan": "Digitalizar",
+  "settings": "Definições",
+  "screen_doesnt_exist": "Este ecrã não existe.",
+  "home_screen": "Ir para o ecrã inicial!",
+  "digital_wallet": "Carteira Digital",
+  "welcome": "Bem-vindo!",
+  "verify_identity": "Por favor verifique a sua identidade para aceder à sua carteira",
+  "authenticate": "Autenticar",
+  "authenticated": "Autenticado",
+  "authenticate_to_continue": "Autentique para continuar",
+  "use_password": "Use palavra-passe",
+  "no_wallet": "Ainda não tem uma carteira. Deseja criar uma?",
+  "create_wallet": "Criar Carteira",
+  "create": "Criar",
+  "close": "Fechar"
+}

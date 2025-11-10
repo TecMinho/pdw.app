@@ -1,0 +1,20 @@
+{
+  "credential_reader": "Leitor de Credenciais",
+  "credential_successfully_issued": "Credencial emitida com sucesso!",
+  "error_while_issuing_credential": "Erro ao emitir a credencial!",
+  "invalid_qr_code": "Código QR inválido",
+  "no_did_found": "Nenhum DID encontrado!",
+  "no_request_uri": "Nenhum request_uri encontrado no URL da oferta!",
+  "presentation_success": "Apresentação verificável emitida com sucesso",
+  "presentation_error": "Erro ao emitir apresentação verificável",
+  "scan_qr_code_error": "Ocorreu um erro ao ler o código QR. Por favor tente novamente",
+  "invalid_token_error": "Token de autenticação inválido. Uma razão possível é o facto de o mesmo código QR ter sido lido mais do que uma vez.",
+  "requesting_camera_permission": "A pedir autorização do uso da câmara",
+  "camera_no_access": "Sem acesso à câmara",
+  "accept": "Aceitar",
+  "reject": "Rejeitar",
+  "loading": "A carregar",
+  "verification_success": "Credential verificada com sucesso!",
+  "verification_disclosure_error": "Erro ao validar apresentação com divulgação seletiva",
+  "verification_credential_error": "Erro ao validar a credencial"
+}

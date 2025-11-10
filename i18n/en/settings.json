@@ -1,0 +1,23 @@
+{
+  "your_did": "Your DID",
+  "confirm_delete_credentials": "Are you sure you want to delete all credentials?",
+  "delete_credentials": "Delete all credentials",
+  "delete": "Delete",
+  "confirm_delete_wallet": "Are you sure you want to delete your wallet?",
+  "delete_wallet": "Delete wallet",
+  "view_did": "View DID",
+  "enter_offer_url": "Enter credential offer URL",
+  "accept": "Accept",
+  "reject": "Reject",
+  "settings": "Settings",
+  "paste_offer_url": "Paste credential offer URL",
+  "enter_pre_approved_code": "Enter pre-approved code (if applicable)",
+  "issuing": "Issuing...",
+  "issue_credential": "Issue Credential",
+  "no_offer_url": "No offer URL provided",
+  "no_did_found": "No DID found",
+  "no_credential_found": "No credential found",
+  "failed_to_fetch_or_parse_offer": "Failed to fetch or parse offer",
+  "cancel": "Cancel",
+  "language": "Language"
+}

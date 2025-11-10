@@ -1,0 +1,18 @@
+{
+  "credentials": "Credentials",
+  "scan": "Scan",
+  "settings": "Settings",
+  "screen_doesnt_exist": "This screen doesn't exist.",
+  "home_screen": "Go to home screen!",
+  "digital_wallet": "Digital Wallet",
+  "welcome": "Welcome!",
+  "verify_identity": "Please verify your identity to access your wallet",
+  "authenticate": "Authenticate",
+  "authenticated": "Authenticated",
+  "authenticate_to_continue": "Authenticate to continue",
+  "use_password": "Use password",
+  "no_wallet": "You don't have a wallet yet. Do you wish to create one?",
+  "create_wallet": "Create Wallet",
+  "create": "Create",
+  "close": "Close"
+}
