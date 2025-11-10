@@ -86,6 +86,7 @@ pre-authorized code (if needed)
 - The app requests a Verifiable Presentation and handles the OpenID compliant flow
 - The validity of the credentials shared in the Verifiable Presentation is returned and displayed to the user
 
-## 🌍 Notes
+## 🌍 Notes / FAQs
 
 - Localhost (`127.0.0.1`) won't work for API access from mobile — use your network's IP!
+- One must set a PIN to unlock the device when running in the *emulator* otherwise the App will be stuck in the splash screen.
