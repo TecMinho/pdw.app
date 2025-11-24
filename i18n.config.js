@@ -15,6 +15,7 @@ const resources = {
       settings: require("./i18n/en/settings.json"),
       misc: require("./i18n/en/misc.json"),
       credentials: require("./i18n/en/credentials.json"),
+      about: require("./i18n/en/about.json"),
     },
   },
   pt: {
@@ -24,6 +25,7 @@ const resources = {
       settings: require("./i18n/pt/settings.json"),
       misc: require("./i18n/pt/misc.json"),
       credentials: require("./i18n/pt/credentials.json"),
+      about: require("./i18n/pt/about.json"),
     },
   },
 };

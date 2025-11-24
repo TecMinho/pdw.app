@@ -26,7 +26,14 @@ export {
 } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
-LogBox.ignoreAllLogs();
+
+// Enable logging for all warnings
+LogBox.ignoreAllLogs(false);
+
+// Capture global JS errors
+ErrorUtils.setGlobalHandler((error, isFatal) => {
+  console.error("Caught global error:", error, isFatal);
+});
 
 /**
  * Root Layout Component - App Initialization and Font Loading

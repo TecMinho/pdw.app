@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, Modal, TextInput, Image } from "react-native";
+import { View, Text, Pressable, Modal, TextInput, Image, Linking } from "react-native";
 import StorageHelper from "@/helpers/storage";
 import { useRouter } from "expo-router";
 import { useTextDialog } from "@/providers/textDialogProvider";
@@ -119,7 +119,8 @@ export default function Home() {
     | "eye-outline"
     | "link-outline"
     | "trash-outline"
-    | "wallet-outline";
+    | "wallet-outline"
+    | "information-circle-outline";
 
   /**
    * Settings menu configuration
@@ -239,6 +240,7 @@ export default function Home() {
           </Text>
         </Pressable>
       ))}
+
       <Pressable
         onPress={() => changeLanguage(currentLanguage === "pt" ? "en" : "pt")}
         style={({ pressed }) => [
@@ -269,20 +271,68 @@ export default function Home() {
         </Text>
       </Pressable>
 
+
+
+
+      <Pressable
+          key={t("settings.about")}
+          onPress={() => router.navigate('/about')}
+          style={({ pressed }) => [
+            {
+              flexDirection: "row",
+              alignItems: "center",
+              marginTop: 15,
+              paddingVertical: 15,
+              paddingHorizontal: 10,
+              borderRadius: 8,
+              backgroundColor: pressed ? "#e0e0e0" : "transparent",
+            },
+          ]}
+        >
+          <Ionicons
+            name={"information-circle-outline"}
+            size={22}
+            color={"#007AFF"}
+            style={{ marginRight: 12 }}
+          />
+          <Text style={{ fontSize: 16, color: "#222" }}>
+            {t("settings.about")}
+          </Text>
+      </Pressable>
+
+
       <View
         style={{
           position: "absolute",
           bottom: 40,
-          left: 0,
-          right: 0,
+          left: 40,
+          right: 40,
+          flexDirection: "row",
           alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
-        <Image
-          source={require("@/assets/images/logo.png")}
-          style={{ width: 120, height: 120, resizeMode: "contain" }}
-          alt="Logo"
-        />
+
+        <Pressable
+            onPress={() => Linking.openURL("https://ec.europa.eu/digital-building-blocks/sites/display/EBSI")}
+            style={({pressed}) => [{opacity: pressed ? 0.7 : 1}]}
+        >
+            <Image
+                source={require("@/assets/images/logos/ebsi.png")}
+                style={{ width: 120, height: 120, resizeMode: "contain" }}
+                alt="Logo EBSI"
+            />
+        </Pressable>
+        <Pressable
+            onPress={() => Linking.openURL("https://www.tecminho.uminho.pt")}
+            style={({pressed}) => [{opacity: pressed ? 0.7 : 1}]}
+        >
+            <Image
+                source={require("@/assets/images/logos/tecminho.png")}
+                style={{ width: 120, height: 120, resizeMode: "contain" }}
+                alt="Logo TecMinho"
+            />
+        </Pressable>
       </View>
 
       <Modal
