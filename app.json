@@ -5,11 +5,11 @@
     "newArchEnabled": true,
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/app-icon.png",
+    "icon": "./assets/images/app-icon.jpeg",
     "scheme": "credentials-wallet",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/app-icon.png",
+      "image": "./assets/images/app-icon.jpeg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -25,7 +25,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/app-icon.png",
+        "foregroundImage": "./assets/images/app-icon.jpeg",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -37,7 +37,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/app-icon.png"
+      "favicon": "./assets/images/app-icon.jpeg"
     },
     "plugins": [
       [
