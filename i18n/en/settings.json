@@ -2,6 +2,7 @@
   "your_did": "Your DID",
   "confirm_delete_credentials": "Are you sure you want to delete all credentials?",
   "delete_credentials": "Delete all credentials",
+  "about": "About",
   "delete": "Delete",
   "confirm_delete_wallet": "Are you sure you want to delete your wallet?",
   "delete_wallet": "Delete wallet",

@@ -1,15 +1,15 @@
 {
   "expo": {
     "name": "Portuguese Digital Wallet",
-    "slug": "credentials-wallet",
+    "slug": "portuguese-digital-wallet",
     "newArchEnabled": true,
-    "version": "1.0.0",
+    "version": "1.1.2",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon.png",
-    "scheme": "credentials-wallet",
+    "scheme": "portuguese-digital-wallet",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/app-icon.png",
+      "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,33 +17,35 @@
       "**/*"
     ],
     "ios": {
+      "buildNumber": 1,
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.credentialswallet"
+      "bundleIdentifier": "pt.tecminho.pdw"
     },
     "androidNavigationBar": {
       "backgroundColor": "#ffffff"
     },
     "android": {
+      "versionCode": 4,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/app-icon.png",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.anonymous.credentialswallet"
+      "package": "pt.tecminho.pdw"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/app-icon.png"
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera"
         }
       ],
       "expo-router",
