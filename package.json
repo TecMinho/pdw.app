@@ -1,7 +1,7 @@
 {
-  "name": "credentials-wallet",
+  "name": "portuguese-digital-wallet",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -67,6 +67,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "babel-plugin-transform-remove-console": "^6.9.4",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/pdfmake": "^0.2.11",
     "@types/react": "19.1.0",

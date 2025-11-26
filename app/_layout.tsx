@@ -27,13 +27,18 @@ export {
 
 SplashScreen.preventAutoHideAsync();
 
-// Enable logging for all warnings
-LogBox.ignoreAllLogs(false);
+let in_production:boolean = ['prod', 'production'].includes(process.env.NODE_ENV);
 
-// Capture global JS errors
-ErrorUtils.setGlobalHandler((error, isFatal) => {
-  console.error("Caught global error:", error, isFatal);
-});
+// Enable logging for all warnings
+LogBox.ignoreAllLogs(in_production);
+
+if (! in_production) {
+    // Capture global JS errors
+    ErrorUtils.setGlobalHandler((error, isFatal) => {
+        console.error("Caught global error:", error, isFatal);
+    });
+}
+
 
 /**
  * Root Layout Component - App Initialization and Font Loading
