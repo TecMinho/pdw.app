@@ -197,13 +197,12 @@ const ConformanceCredentialSelector: React.FC<
               marginBottom: 15,
               padding: 0,
             };
-
             return (
               <View key={cred.id} style={containerStyle}>
                 <CredentialCard
                   title={cred.type?.[2] ?? t("credentials.credential")}
                   status={expiredStatus[cred.id] ? "expired" : "valid"}
-                  name=""
+                  name={cred.name || ""}
                   expirationDate={new Date(
                     cred.expirationDate,
                   ).toLocaleDateString()}
@@ -213,6 +212,8 @@ const ConformanceCredentialSelector: React.FC<
                   onPress={() => toggleCredential(cred.id)}
                   style={{ marginVertical: 0 }}
                   t={t}
+                  logo={cred.logo}
+                  backgroundImage={cred.backgroundImage}
                 />
               </View>
             );
