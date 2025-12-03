@@ -427,7 +427,7 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
                     key={cred.id}
                     title={cred.type[2]}
                     status={expiredStatus[cred.id] ? "expired" : "valid"}
-                    name={""}
+                    name={cred.name || ""}
                     expirationDate={new Date(
                       cred.expirationDate,
                     ).toLocaleDateString()}
@@ -436,6 +436,8 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
                     onPress={() => handleSelect(cred)}
                     validFrom={new Date(cred.validFrom).toLocaleDateString()}
                     t={t}
+                    logo={cred.logo}
+                    backgroundImage={cred.backgroundImage}
                   />
                 ))}
               </ScrollView>

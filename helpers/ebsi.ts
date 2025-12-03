@@ -127,6 +127,9 @@ export class EBSIVerifiableCredential {
   context: string[];
   type: string[];
   jwt: string | undefined;
+  name: string | undefined;
+  logo: string | undefined;
+  backgroundImage: string | undefined;
 
   /**
    * Creates a new EBSIVerifiableCredential instance
@@ -156,6 +159,9 @@ export class EBSIVerifiableCredential {
     context: string[],
     type: string[],
     jwt?: string,
+    name?: string,
+    logo?: string,
+    backgroundImage?: string,
   ) {
     this.id = id;
     this.issuer = issuer;
@@ -169,6 +175,9 @@ export class EBSIVerifiableCredential {
     this.context = context;
     this.type = type;
     this.jwt = jwt;
+    this.name = name;
+    this.logo = logo;
+    this.backgroundImage = backgroundImage;
   }
 
   /**
@@ -191,6 +200,9 @@ export class EBSIVerifiableCredential {
       json["@context"],
       json["type"],
       json["jwt"],
+      json["name"],
+      json["logo"],
+      json["backgroundImage"],
     );
   }
 
@@ -213,6 +225,9 @@ export class EBSIVerifiableCredential {
       "@context": this.context,
       type: this.type,
       jwt: this.jwt,
+      logo: this.logo,
+      name: this.name,
+      backgroundImage: this.backgroundImage,
     };
   }
 }
@@ -235,6 +250,9 @@ export class EBSIServices {
   static async getVerifiableCredential(
     credentialOffer: { vc: any },
     credentialJwt: string,
+    name?: string,
+    logo?: string,
+    backgroundImage?: string,
   ): Promise<EBSIVerifiableCredential | null> {
     try {
       const vcPayload = credentialOffer.vc;
@@ -242,8 +260,10 @@ export class EBSIServices {
       const credential = EBSIVerifiableCredential.fromJson({
         ...vcPayload,
         jwt: credentialJwt,
+        logo,
+        name,
+        backgroundImage,
       });
-
       if (!credential) {
         throw new Error("Error creating verifiable credential");
       }
@@ -480,7 +500,7 @@ export class EBSIConformance {
     const codeChallenge = await this.generateCodeChallenge(codeVerifier);
 
     const openIdConfiguration = await fetch(
-      `${this.apiBase}/.well-known/openid-configuration?url=${credentialIssuer.credential_issuer}`,
+      `${this.apiBase}/.well-known/openid-configuration?url=${metadata.authorization_server}`,
       {
         method: "GET",
         headers: this.apiHeaders,

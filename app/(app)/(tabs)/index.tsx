@@ -5,6 +5,8 @@ import {
   Pressable,
   ActivityIndicator,
   Modal,
+  Image,
+  ImageBackground,
 } from "react-native";
 import SimpleLineIcon from "react-native-vector-icons/SimpleLineIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -36,6 +38,8 @@ interface CredentialCardProps {
   onPress: () => void;
   style?: any;
   t: Function;
+  logo?: string;
+  backgroundImage?: string;
 }
 
 /**
@@ -58,76 +62,117 @@ export const CredentialCard: React.FC<CredentialCardProps> = ({
   onPress,
   style,
   t,
+  logo,
+  backgroundImage,
 }) => {
   const isRevoked = status === "revoked";
   const isExpired = status === "expired";
   const cardColor = isRevoked ? "#D0E7FF" : "#c8edff";
-
   return (
-    <Pressable onPress={onPress}>
-      <View
+    <Pressable onPress={onPress} style={{ padding: 5 }}>
+      <ImageBackground
+        source={backgroundImage ? { uri: backgroundImage } : undefined}
         style={{
-          backgroundColor: cardColor,
+          backgroundColor: backgroundImage ? undefined : cardColor,
           padding: 20,
           borderRadius: 25,
           marginVertical: 10,
+          overflow: "hidden",
           shadowColor: "#000",
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.5,
+          shadowRadius: 6,
+          borderColor: "#000",
+          shadowOffset: { width: 0, height: 3 },
+          elevation: 4, // for Android
+          ...(backgroundImage && { minHeight: 200 }),
           ...style,
         }}
       >
-        <Text style={{ fontSize: 22, fontWeight: "bold", color: "black" }}>
-          {title}
-        </Text>
-        <Text style={{ fontSize: 14, color: "black" }}>{name}</Text>
+        {backgroundImage && logo ? (
+          <View style={{ alignItems: "flex-start", flexDirection: "row" }}>
+            <Image
+              source={{ uri: logo }}
+              style={{ width: 80, height: 80 }}
+              resizeMode="none"
+            />
+            <Text style={{ fontSize: 12, color: "black", fontWeight: "bold" }}>
+              {name || title}
+            </Text>
+          </View>
+        ) : !backgroundImage && logo ? (
+          <View>
+            <Image
+              source={{ uri: logo }}
+              style={{ width: 300, height: 100 }}
+              resizeMode="contain"
+            />
+            <Text style={{ fontSize: 12, color: "black", fontWeight: "bold" }}>
+              {name || title}
+            </Text>
+          </View>
+        ) : (
+          <Text style={{ fontSize: 14, color: "black", fontWeight: "bold" }}>
+            {name || title}
+          </Text>
+        )}
 
-        <View style={{ height: 30 }} />
+        <View style={{ height: 20 }} />
 
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginTop: 15,
-            alignItems: "flex-end",
-          }}
-        >
-          <View style={{ flex: 1 }}>
-            <Text
+        {!backgroundImage && (
+          <>
+            <View
               style={{
-                fontSize: 15,
-                fontWeight: "bold",
-                color: isRevoked ? "black" : isExpired ? "#DAA520" : "green",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginTop: 15,
+                alignItems: "flex-end",
               }}
             >
-              {isRevoked
-                ? `❌ ${t("main.revoked")}`
-                : isExpired
-                  ? `⏳ ${t("main.expired")}`
-                  : `✔ ${t("main.valid")}`}
-            </Text>
-          </View>
-          <View>
-            <Text style={{ fontSize: 14, color: "black", textAlign: "right" }}>
-              Exp:{" "}
-              {validUntil !== "Invalid Date"
-                ? validUntil
-                : expirationDate !== "Invalid Date"
-                  ? expirationDate
-                  : "N/A"}
-            </Text>
-            <Text style={{ fontSize: 14, color: "black", textAlign: "right" }}>
-              Issue:{" "}
-              {validFrom !== "Invalid Date"
-                ? validFrom
-                : issueDate !== "Invalid Date"
-                  ? issueDate
-                  : "N/A"}
-            </Text>
-          </View>
-        </View>
-      </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    color: isRevoked
+                      ? "black"
+                      : isExpired
+                        ? "#DAA520"
+                        : "green",
+                  }}
+                >
+                  {isRevoked
+                    ? `❌ ${t("main.revoked")}`
+                    : isExpired
+                      ? `⏳ ${t("main.expired")}`
+                      : `✔ ${t("main.valid")}`}
+                </Text>
+              </View>
+              <View>
+                <Text
+                  style={{ fontSize: 14, color: "black", textAlign: "right" }}
+                >
+                  {t("credentials.exp")}:{" "}
+                  {validUntil !== "Invalid Date"
+                    ? validUntil
+                    : expirationDate !== "Invalid Date"
+                      ? expirationDate
+                      : "N/A"}
+                </Text>
+                <Text
+                  style={{ fontSize: 14, color: "black", textAlign: "right" }}
+                >
+                  {t("credentials.issue")}:{" "}
+                  {validFrom !== "Invalid Date"
+                    ? validFrom
+                    : issueDate !== "Invalid Date"
+                      ? issueDate
+                      : "N/A"}
+                </Text>
+              </View>
+            </View>
+          </>
+        )}
+      </ImageBackground>
     </Pressable>
   );
 };
@@ -561,8 +606,10 @@ export default function Home() {
                       console.error(t("main.error_loading_credentials"), error);
                     }
                   }}
-                  name={""}
+                  name={item.name || ""}
+                  logo={item.logo}
                   t={t}
+                  backgroundImage={item.backgroundImage}
                 />
               )}
             />

@@ -231,10 +231,34 @@ export const scanMappings: ScanMappings = {
 
         const rawCredential = credential.credential;
         const decodedPayload: any = decodeJwt(rawCredential);
+        const finalFilterTypes = decodedPayload?.vc?.type.filter(
+          (type: any) =>
+            !["VerifiableCredential", "VerifiableAttestation"].includes(type),
+        );
+
+        const displayCredential = metadata.credentials_supported?.find(
+          (item: any) =>
+            item.types.some((type: string) => finalFilterTypes.includes(type)),
+        );
+
+        let credentialName = "";
+        let credentialLogo = "";
+        let credentialBackgroundImage = "";
+
+        if (displayCredential) {
+          const { name, logo, background_image } =
+            displayCredential?.display[0];
+          credentialName = name;
+          credentialLogo = logo?.uri;
+          credentialBackgroundImage = background_image?.uri;
+        }
 
         return EBSIServices.getVerifiableCredential(
           decodedPayload,
           rawCredential,
+          credentialName,
+          credentialLogo,
+          credentialBackgroundImage,
         );
       } else {
         const preAuthorizedCode =
@@ -260,7 +284,7 @@ export const scanMappings: ScanMappings = {
         try {
           const openIdConfiguration =
             await EBSIConformance.getOpenIdConfiguration(
-              credentialIssuer.credential_issuer,
+              credentialIssuer.authorization_server,
             );
 
           if (openIdConfiguration?.token_endpoint) {
@@ -307,9 +331,34 @@ export const scanMappings: ScanMappings = {
 
         await AsyncStorage.removeItem("code");
 
+        const finalFilterTypes = decodedPayload?.vc?.type.filter(
+          (type: any) =>
+            !["VerifiableCredential", "VerifiableAttestation"].includes(type),
+        );
+
+        const displayCredential = metadata.credentials_supported?.find(
+          (item: any) =>
+            item.types.some((type: string) => finalFilterTypes.includes(type)),
+        );
+
+        let credentialName = "";
+        let credentialLogo = "";
+        let credentialBackgroundImage = "";
+
+        if (displayCredential) {
+          const { name, logo, background_image } =
+            displayCredential?.display[0];
+          credentialBackgroundImage = background_image?.uri;
+          credentialName = name;
+          credentialLogo = logo?.uri;
+        }
+
         return EBSIServices.getVerifiableCredential(
           decodedPayload,
           rawCredential,
+          credentialName,
+          credentialLogo,
+          credentialBackgroundImage,
         );
       }
     },

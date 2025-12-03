@@ -1,6 +1,12 @@
 import { Text, View } from "react-native-ui-lib";
 import React, { useEffect, useState } from "react";
-import { FlatList, StyleSheet, Pressable, ImageBackground } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  Pressable,
+  ImageBackground,
+  Image,
+} from "react-native";
 import _ from "lodash";
 import { useLocalSearchParams } from "expo-router";
 import StorageHelper from "@/helpers/storage";
@@ -121,16 +127,52 @@ export default function CredentialExpandedInfo({
       }
 
       return { key, displayValue };
-    });
+    })
+    .filter((item) => !["logo", "name", "backgroundImage"].includes(item.key));
 
   return (
     <>
-      <ImageBackground
-        source={require("@/assets/images/carteira.png")}
-        style={styles.imageBackground}
-        resizeMode="contain"
-      >
-        <View style={styles.titleContainer}>
+      {!credential.logo ? (
+        <ImageBackground
+          source={require("@/assets/images/carteira.png")}
+          style={styles.imageBackground}
+          resizeMode="contain"
+        >
+          <View style={styles.titleContainer}>
+            <Text style={styles.titleText}>
+              {Array.isArray(credential.type)
+                ? credential.type[credential.type.length - 1]
+                : _.startCase(
+                    credential.type || t("credentials.verifiable_credential"),
+                  )}
+            </Text>
+            <Text
+              style={[
+                styles.statusText,
+                {
+                  color: isRevoked
+                    ? "black"
+                    : isExpired
+                      ? "#DAA520"
+                      : "#388E3C",
+                },
+              ]}
+            >
+              {isRevoked
+                ? `❌ ${t("credentials.revoked")}`
+                : isExpired
+                  ? `⏳ ${t("credentials.expired")}`
+                  : `✔ ${t("credentials.valid")}`}
+            </Text>
+          </View>
+        </ImageBackground>
+      ) : (
+        <View style={{ alignItems: "center" }}>
+          <Image
+            source={{ uri: credential.logo }}
+            style={{ width: 300, height: 100 }}
+            resizeMode="contain"
+          />
           <Text style={styles.titleText}>
             {Array.isArray(credential.type)
               ? credential.type[credential.type.length - 1]
@@ -138,6 +180,9 @@ export default function CredentialExpandedInfo({
                   credential.type || t("credentials.verifiable_credential"),
                 )}
           </Text>
+          {credential.name && (
+            <Text style={styles.subtitleText}>{credential.name}</Text>
+          )}
           <Text
             style={[
               styles.statusText,
@@ -153,8 +198,7 @@ export default function CredentialExpandedInfo({
                 : `✔ ${t("credentials.valid")}`}
           </Text>
         </View>
-      </ImageBackground>
-
+      )}
       <View style={styles.detailsContainer}>
         <FlatList
           data={Object.entries(
@@ -198,7 +242,7 @@ export default function CredentialExpandedInfo({
                         );
 
                         return (
-                          <Pressable
+                          <View
                             key={item.key + index}
                             style={[styles.detailCard]}
                           >
@@ -206,7 +250,7 @@ export default function CredentialExpandedInfo({
                             <Text style={[styles.value]}>
                               {item.displayValue}
                             </Text>
-                          </Pressable>
+                          </View>
                         );
                       })}
                     </View>
@@ -241,6 +285,9 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 15.5,
     fontWeight: "bold",
+  },
+  subtitleText: {
+    fontSize: 12.5,
   },
   imageBackground: {
     width: 364,
