@@ -3,7 +3,7 @@
     "name": "Portuguese Digital Wallet",
     "slug": "portuguese-digital-wallet",
     "newArchEnabled": true,
-    "version": "1.2.2",
+    "version": "1.2.3",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon.png",
     "scheme": "portuguese-digital-wallet",
@@ -25,7 +25,7 @@
       "backgroundColor": "#ffffff"
     },
     "android": {
-      "versionCode": 10,
+      "versionCode": 11,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"

@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocale } from "@/context/TranslationContext";
 import Colors from "@/constants/Colors";
+import Constants from 'expo-constants';
 
 /**
  * Settings Screen Component - Wallet Management Interface
@@ -171,7 +172,11 @@ export default function About() {
                     />
                 </Pressable>
 
-
+                <Text
+                    style={{ fontSize: 10, flex: 1, alignItems: "center", textAlign: "center", marginTop: 5, marginBottom: 10 }}
+                >
+                    {Constants.expoConfig?.version ? t("about.version_info", { version: Constants.expoConfig.version }) : t("about.version_info_unknown")   }
+                </Text>
 
             </ScrollView>
 

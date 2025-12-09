@@ -7,5 +7,7 @@
     "objective_text": "The goal of the project is to train qualified professionals in this area, strengthen the national blockchain industry, build credibility for the national blockchain industry, and help transform Portugal into a world leader in this technology.",
     "funding": "Co-funding",
     "more_info_project": "Project",
-    "more_info_project_tecminho": "Project - TecMinho"
+    "more_info_project_tecminho": "Project - TecMinho",
+    "version_info": "App Version: {{version}}",
+    "version_info_unknown": "App Version: Unknown"
 }
