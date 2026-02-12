@@ -20,6 +20,7 @@ import { EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { Button, FloatingButton } from "react-native-ui-lib";
 import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
 import { useLocale } from "@/context/TranslationContext";
+import * as Clipboard from 'expo-clipboard';
 
 /**
  * Settings Screen Component - Wallet Management Interface
@@ -38,6 +39,17 @@ export default function Home() {
   const [code, setCode] = useState("");
   const [fetching, setFetching] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  /**
+   * Copy the user's DID (Decentralized Identifier)
+   * Copy the DID string to the Clipboard to be used in other applications
+   */
+  const handleCopyDID = async () => {
+    const did = await StorageHelper.loadDID();
+    if (did?.did) {
+      await Clipboard.setStringAsync(did?.did);
+    }
+  };
 
   /**
    * Display the user's DID (Decentralized Identifier)
@@ -47,6 +59,11 @@ export default function Home() {
     const did = await StorageHelper.loadDID();
     enqueueDialog(did?.did || t("settings.no_did_found"), {
       title: t("settings.your_did"),
+      mainAction: {
+        label: t("settings.copy_did"),
+        backgroundColor: "green",
+        onPress: handleCopyDID,
+      }, 
     });
   };
 
