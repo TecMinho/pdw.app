@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import {
+  Alert,
   View,
   Text,
   Pressable,
@@ -20,6 +21,9 @@ import { EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { Button, FloatingButton } from "react-native-ui-lib";
 import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
 import { useLocale } from "@/context/TranslationContext";
+import * as Clipboard from 'expo-clipboard';
+import DIDQRCode from "@/components/DIDQRCode";
+import QRCode from "react-native-qrcode-svg";
 
 /**
  * Settings Screen Component - Wallet Management Interface
@@ -37,17 +41,24 @@ export default function Home() {
   const [offerUrl, setOfferUrl] = useState("");
   const [code, setCode] = useState("");
   const [fetching, setFetching] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);  
+  const [isViewDIDModalOpen, setViewDIDModalOpen] = useState(false);
+  const [walletDID, setWalletDID] = useState(""); //useState(t("settings.no_did_found"));
+
+  /**
+   * Copy the user's DID (Decentralized Identifier)
+   * Copy the DID string to the Clipboard to be used in other applications
+   */
+  const handleCopyDID = async () => {
+      await Clipboard.setStringAsync(walletDID);
+  };
 
   /**
    * Display the user's DID (Decentralized Identifier)
    * Shows the DID string in a dialog for user reference or sharing
    */
   const handleViewDID = async () => {
-    const did = await StorageHelper.loadDID();
-    enqueueDialog(did?.did || t("settings.no_did_found"), {
-      title: t("settings.your_did"),
-    });
+    setViewDIDModalOpen(true);
   };
 
   /**
@@ -482,6 +493,65 @@ export default function Home() {
                   setOfferUrl("");
                 }}
                 disabled={fetching}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+
+      <Modal
+        visible={isViewDIDModalOpen}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setViewDIDModalOpen(false)}
+        onShow={() => {
+          StorageHelper.loadDID().then((did) => {
+            setWalletDID(did?.did || "");
+          });
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            padding: 20,
+            backgroundColor: "rgba(0,0,0,0.5)",
+          }}
+        >
+    
+          <View
+            style={{ backgroundColor: "white", padding: 20, borderRadius: 10 }}
+          >
+            <Text
+              style={{ marginBottom: 10, fontWeight: "bold", fontSize: 16 }}
+            >
+              {t("settings.your_did")}
+            </Text>
+            <Text
+              style={{ marginBottom: 10, fontSize: 12 }}
+            >
+              {walletDID}
+            </Text>
+            <View style={{ alignItems: "center", marginBottom: 20}}>
+              <DIDQRCode value={walletDID} size={250} />
+            </View>
+            <View style={{ gap: 10 }}>
+              <Button
+                label={t("settings.copy_did")}
+                outline={true}
+                onPress={() => {
+                  handleCopyDID();
+                  setViewDIDModalOpen(false);
+                }}
+                disabled={walletDID === "" || walletDID === t("settings.no_did_found")}
+              />
+
+              <Button
+                label={t("settings.cancel")}
+                onPress={() => {
+                  setViewDIDModalOpen(false);
+                }}
               />
             </View>
           </View>
