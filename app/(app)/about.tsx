@@ -23,13 +23,15 @@ export default function About() {
             fontWeight: "bold",
             paddingTop: 30,
             paddingBottom: 15,
-            color: "#007AFF",
+            color: Colors.current.title,
         },
         text: {
             fontSize: 16,
+            color: Colors.current.text,
         },
         link: {
-            cursor: "pointer"
+            cursor: "pointer",
+            color: Colors.current.tint,
         },
         linkPressed: {
             opacity: 0.7
@@ -40,7 +42,7 @@ export default function About() {
      * Main Render Method - About Page
      */
     return (
-        <View style={{ padding: 20, backgroundColor: "white", flex: 1 }}>
+        <View style={{ padding: 20, backgroundColor: Colors.current.background, flex: 1 }}>
             <View
                 style={{
                     flexDirection: "row",
@@ -51,10 +53,10 @@ export default function About() {
                 }}
             >
                 <Pressable onPress={() => router.replace("/settings")}>
-                    <Ionicons name="chevron-back-outline" size={28} />
+                    <Ionicons name="chevron-back-outline" size={28} color={Colors.current.text} />
                 </Pressable>
                 <Text
-                    style={{ fontSize: 28, fontWeight: "bold", flex: 1, marginLeft: 3 }}
+                    style={{ fontSize: 28, fontWeight: "bold", flex: 1, marginLeft: 3, color: Colors.current.text }}
                 >
                     {t("settings.about")}
                 </Text>

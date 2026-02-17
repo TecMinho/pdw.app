@@ -1,6 +1,5 @@
-import React, { Suspense, useState } from "react";
+import React, { useState } from "react";
 import {
-  Alert,
   View,
   Text,
   Pressable,
@@ -18,13 +17,12 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { scanMappings } from "@/helpers/scanMappings";
 import { EBSIVerifiableCredential } from "@/helpers/ebsi";
-import { Button, FloatingButton } from "react-native-ui-lib";
+import { Button, Colors, FloatingButton } from "react-native-ui-lib";
 import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
 import { useLocale } from "@/context/TranslationContext";
 import * as Clipboard from 'expo-clipboard';
 import DIDQRCode from "@/components/DIDQRCode";
-import QRCode from "react-native-qrcode-svg";
-
+import {default as ThemeColors} from "@/constants/Colors";
 /**
  * Settings Screen Component - Wallet Management Interface
  *
@@ -192,7 +190,7 @@ export default function Home() {
    * - Manual credential offer processing modal
    */
   return (
-    <View style={{ padding: 20, backgroundColor: "white", flex: 1 }}>
+    <View style={{ padding: 20, backgroundColor: ThemeColors.current.background, flex: 1 }}>
       <Modal visible={!!data}>
         <CredentialExpandedInfo data={data} status={""} />
         <FloatingButton
@@ -202,7 +200,8 @@ export default function Home() {
             label: t("settings.accept"),
             disabled: loading,
             onPress: onApprove,
-            backgroundColor: "#10C790",
+            color: ThemeColors.current.primary.text,
+            backgroundColor: ThemeColors.current.primary.background,
           }}
           secondaryButton={{
             outline: false,
@@ -221,13 +220,14 @@ export default function Home() {
           alignItems: "center",
           marginTop: 30,
           marginBottom: 25,
+          backgroundColor: ThemeColors.current.background,
         }}
       >
         <Pressable onPress={() => router.replace("/(app)/(tabs)")}>
-          <Ionicons name="chevron-back-outline" size={28} />
+          <Ionicons name="chevron-back-outline" size={28} color={ThemeColors.current.text} />
         </Pressable>
         <Text
-          style={{ fontSize: 28, fontWeight: "bold", flex: 1, marginLeft: 3 }}
+          style={{ fontSize: 28, fontWeight: "bold", flex: 1, marginLeft: 3, color: ThemeColors.current.text }}
         >
           {t("settings.settings")}
         </Text>
@@ -244,17 +244,17 @@ export default function Home() {
               paddingVertical: 15,
               paddingHorizontal: 10,
               borderRadius: 8,
-              backgroundColor: pressed ? "#e0e0e0" : "transparent",
+              backgroundColor: pressed ? ThemeColors.current.tint : "transparent",
             },
           ]}
         >
           <Ionicons
             name={icon}
             size={22}
-            color={danger ? "#d9534f" : "#007AFF"}
+            color={danger ? "#d9534f" : ThemeColors.current.text}
             style={{ marginRight: 12 }}
           />
-          <Text style={{ fontSize: 16, color: danger ? "#d9534f" : "#222" }}>
+          <Text style={{ fontSize: 16, color: danger ? "#d9534f" : ThemeColors.current.text }}>
             {label}
           </Text>
         </Pressable>
@@ -270,7 +270,7 @@ export default function Home() {
             paddingVertical: 15,
             paddingHorizontal: 10,
             borderRadius: 8,
-            backgroundColor: pressed ? "#e0e0e0" : "transparent",
+            backgroundColor: pressed ? ThemeColors.current.tint : "transparent",
           },
         ]}
       >
@@ -278,14 +278,14 @@ export default function Home() {
           <Ionicons
             name="globe-outline"
             size={22}
-            color="#007AFF"
+            color={ThemeColors.current.text}
             style={{ marginRight: 12 }}
           />
-          <Text style={{ fontSize: 16, color: "#222" }}>
+          <Text style={{ fontSize: 16, color: ThemeColors.current.text }}>
             {t("settings.language")}
           </Text>
         </View>
-        <Text style={{ fontSize: 16 }}>
+        <Text style={{ fontSize: 16, color: ThemeColors.current.text }}>
           {currentLanguage === "pt" ? "🇵🇹 Português" : "🇬🇧 English"}
         </Text>
       </Pressable>
@@ -307,10 +307,10 @@ export default function Home() {
         <Ionicons
           name={"information-circle-outline"}
           size={22}
-          color={"#007AFF"}
+          color={ThemeColors.current.text}
           style={{ marginRight: 12 }}
         />
-        <Text style={{ fontSize: 16, color: "#222" }}>
+        <Text style={{ fontSize: 16, color: ThemeColors.current.text }}>
           {t("settings.about")}
         </Text>
       </Pressable>
@@ -415,6 +415,10 @@ export default function Home() {
                     ? t("settings.issuing")
                     : t("settings.issue_credential")
                 }
+                color={ThemeColors.current.primary.background}
+                outline={true}
+                outlineColor={ThemeColors.current.primary.background}
+
                 onPress={async () => {
                   console.log("Fetching offer from URL:", offerUrl);
                   setFetching(true);
@@ -488,6 +492,8 @@ export default function Home() {
 
               <Button
                 label={t("settings.cancel")}
+                color={ThemeColors.current.primary.text}
+                backgroundColor={ThemeColors.current.primary.background}
                 onPress={() => {
                   setOfferModalOpen(false);
                   setOfferUrl("");
@@ -539,6 +545,8 @@ export default function Home() {
             <View style={{ gap: 10 }}>
               <Button
                 label={t("settings.copy_did")}
+                color={ThemeColors.current.primary.background}
+                outlineColor={ThemeColors.current.primary.background}
                 outline={true}
                 onPress={() => {
                   handleCopyDID();
@@ -549,6 +557,8 @@ export default function Home() {
 
               <Button
                 label={t("settings.cancel")}
+                color={ThemeColors.current.primary.text}
+                backgroundColor={ThemeColors.current.primary.background}
                 onPress={() => {
                   setViewDIDModalOpen(false);
                 }}

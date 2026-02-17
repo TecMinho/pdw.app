@@ -3,6 +3,7 @@ import SimpleLineIcon from "react-native-vector-icons/SimpleLineIcons";
 import Fontisto from "react-native-vector-icons/Fontisto";
 import Feather from "react-native-vector-icons/Feather";
 import React from "react";
+import Colors from "@/constants/Colors";
 import { useLocale } from "@/context/TranslationContext";
 
 /**
@@ -14,7 +15,12 @@ import { useLocale } from "@/context/TranslationContext";
 export default function TabsLayout() {
   const { t } = useLocale();
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: "blue" }}>
+    <Tabs screenOptions={{ 
+      tabBarStyle: { backgroundColor: Colors.current.background, borderTopColor: Colors.current.textMuted },
+      tabBarActiveTintColor: Colors.current.tabIconSelected, 
+      tabBarInactiveTintColor: Colors.current.tabIconDefault,
+
+     }}>
       <Tabs.Screen
         name="index"
         options={{
