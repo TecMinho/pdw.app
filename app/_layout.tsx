@@ -13,6 +13,7 @@ import { LogBox } from "react-native";
 import { I18nextProvider } from "react-i18next";
 import { TranslationProvider } from "@/context/TranslationContext";
 import i18next from "i18next";
+import { Appearance } from 'react-native';
 
 /**
  * Export Error Boundary for Global Error Handling
@@ -105,7 +106,7 @@ function RootLayoutNav() {
           <CredentialSelectorProvider>
             <TextDialogProvider>
               <AuthProvider>
-                <StatusBar animated style={"dark"} translucent />
+                <StatusBar animated style={Appearance.getColorScheme() || 'light'} translucent />
                 <Slot />
               </AuthProvider>
             </TextDialogProvider>

@@ -22,6 +22,7 @@ import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
 import { EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { useLocale } from "@/context/TranslationContext";
 import NoCredentialsView from "@/components/NoCredentialsView";
+import Colors from "@/constants/Colors";
 
 /**
  * Interface defining the props for the CredentialCard component
@@ -484,7 +485,7 @@ export default function Home() {
    */
   return (
     <>
-      <View style={{ padding: 20, backgroundColor: "white", flex: 1 }}>
+      <View style={{ padding: 20, backgroundColor: Colors.current.background, flex: 1 }}>
         <Modal visible={!!data}>
           <CredentialExpandedInfo data={data} status={""} />
           <FloatingButton
@@ -515,7 +516,7 @@ export default function Home() {
             marginBottom: 25,
           }}
         >
-          <Text style={{ fontSize: 28, fontWeight: "bold", flex: 1 }}>
+          <Text style={{ fontSize: 28, fontWeight: "bold", flex: 1, color: Colors.current.text }}>
             {t("main.credentials")}
           </Text>
 
