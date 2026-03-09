@@ -9,8 +9,9 @@ import * as LocalAuthentication from "expo-local-authentication";
 import { useRouter } from "expo-router";
 import StorageHelper from "@/helpers/storage";
 import { useTextDialog } from "@/providers/textDialogProvider";
-import { EBSIDID } from "@/helpers/ebsi";
+import { EBSIDID, EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { useLocale } from "@/context/TranslationContext";
+import { mutate } from "swr";
 
 /**
  * Authentication Context Interface
@@ -96,7 +97,26 @@ export function AuthProvider({ children }: PropsWithChildren) {
               onPress: async () => {
                 try {
                   const newDid = await EBSIDID.generateDid();
-                  await StorageHelper.saveDID(newDid).then(resolve);
+                  await StorageHelper.saveDID(newDid);
+
+                  const credential =
+                    await EBSIDID.generateDidAttestation(newDid);
+                  if (!credential) {
+                    reject("Failed to generate DID attestation");
+                  } else {
+                    const credentials = await StorageHelper.loadCredentials();
+
+                    const updatedCredentials: EBSIVerifiableCredential[] = [
+                      ...credentials,
+                      credential,
+                    ];
+
+                    await StorageHelper.saveCredentials(updatedCredentials);
+                    await StorageHelper.loadCredentials();
+                    await mutate("credentials");
+
+                    resolve(true);
+                  }
                 } catch (e) {
                   reject(e);
                 }

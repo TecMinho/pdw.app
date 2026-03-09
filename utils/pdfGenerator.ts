@@ -1,7 +1,7 @@
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { Asset } from "expo-asset";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 
 interface Credential {
   id: string;
@@ -24,9 +24,11 @@ function renderSubjectFields(data: any, level = 0): string {
       const isNested = typeof value === "object" && value !== null;
 
       if (Array.isArray(value)) {
-        const items = value.map((item) => {
-          return `<div class="field">${renderSubjectFields(item, level + 1)}</div>`;
-        }).join("");
+        const items = value
+          .map((item) => {
+            return `<div class="field">${renderSubjectFields(item, level + 1)}</div>`;
+          })
+          .join("");
         return `<div class="field"><span class="label">${indent}${key}:</span>${items}</div>`;
       }
 
@@ -42,7 +44,9 @@ function renderSubjectFields(data: any, level = 0): string {
  * Generates a PDF document from credential data and opens sharing dialog
  * Creates a formatted PDF with app logo and credential information
  */
-export async function generateAndSharePDF(credential: Credential | undefined): Promise<void> {
+export async function generateAndSharePDF(
+  credential: Credential | undefined,
+): Promise<void> {
   if (!credential) return;
 
   try {
@@ -50,9 +54,12 @@ export async function generateAndSharePDF(credential: Credential | undefined): P
 
     const imageAsset = Asset.fromModule(require("@/assets/images/logo.png"));
     await imageAsset.downloadAsync();
-    const imageBase64 = await FileSystem.readAsStringAsync(imageAsset.localUri!, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+    const imageBase64 = await FileSystem.readAsStringAsync(
+      imageAsset.localUri!,
+      {
+        encoding: FileSystem.EncodingType.Base64,
+      },
+    );
     const logoSrc = `data:image/png;base64,${imageBase64}`;
 
     const fieldsHtml = renderSubjectFields(subject);

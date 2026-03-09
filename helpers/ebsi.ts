@@ -1,6 +1,7 @@
 import * as Crypto from "expo-crypto";
 import StorageHelper from "@/helpers/storage";
 import { getGlobalCredentialSelector } from "@/utils/credentialSelectorBridge";
+import { decodeJwt } from "jose";
 
 /**
  * EBSI Login Class
@@ -103,6 +104,42 @@ export class EBSIDID {
       );
     } else {
       throw new Error("Error generating a new DID");
+    }
+  }
+
+  /**
+   * Generates a Verifiable Credential (VC) attesting ownership of a DID.
+   * Makes a POST request to the holder service to retrieve a signed DID credential.
+   * Decodes the returned JWT and constructs a verified credential instance.
+   * @param did The decentralized identifier (EBSIDID) to generate an attestation for.
+   * @returns Promise resolving to an EBSIVerifiableCredential instance or null.
+   * @throws Error if the API request fails or the response is invalid.
+   */
+  static async generateDidAttestation(
+    did: EBSIDID,
+  ): Promise<EBSIVerifiableCredential | null> {
+    const res = await fetch(`${this.apiBase}/holder/get_did_credential`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      body: JSON.stringify({ did }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const decodedPayload: any = decodeJwt(data.credential);
+      return EBSIServices.getVerifiableCredential(
+        decodedPayload,
+        data.credential,
+        "DID Attestation",
+        "",
+        "",
+      );
+    } else {
+      console.error(res);
+      throw new Error("Error generating DID attestation");
     }
   }
 }
