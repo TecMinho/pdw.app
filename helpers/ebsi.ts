@@ -43,6 +43,7 @@ export class EBSIDID {
 
   did: string;
   privateKey: string;
+  seed?: string;
   x: string;
   y: string;
 
@@ -53,11 +54,18 @@ export class EBSIDID {
    * @param x - X coordinate of a public key
    * @param y - Y coordinate of a public key
    */
-  constructor(did: string, privateKey: string, x: string, y: string) {
+  constructor(
+    did: string,
+    privateKey: string,
+    x: string,
+    y: string,
+    seed?: string,
+  ) {
     this.did = did;
     this.privateKey = privateKey;
     this.x = x;
     this.y = y;
+    this.seed = seed;
   }
 
   /**
@@ -66,7 +74,13 @@ export class EBSIDID {
    * @returns New EBSIDID instance
    */
   static fromJson(json: any): EBSIDID {
-    return new EBSIDID(json["did"], json["privateKey"], json["x"], json["y"]);
+    return new EBSIDID(
+      json["did"],
+      json["privateKey"],
+      json["x"],
+      json["y"],
+      json["seed"],
+    );
   }
 
   /**
@@ -101,6 +115,7 @@ export class EBSIDID {
         didBody["privateKey"],
         didBody["x"],
         didBody["y"],
+        didBody["seed"],
       );
     } else {
       throw new Error("Error generating a new DID");
@@ -140,6 +155,40 @@ export class EBSIDID {
     } else {
       console.error(res);
       throw new Error("Error generating DID attestation");
+    }
+  }
+
+  static async recoverDid(seed: string): Promise<EBSIDID> {
+    const didRes = await fetch(`${this.apiBase}/holder/recover_did_from_seed`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      body: JSON.stringify({ mnemonic: seed }),
+    });
+
+    if (didRes.ok) {
+      const didBody = await didRes.json();
+
+      if (
+        !didBody["did"] ||
+        !didBody["privateKey"] ||
+        !didBody["x"] ||
+        !didBody["y"]
+      ) {
+        throw new Error("Invalid DID response");
+      }
+
+      return new EBSIDID(
+        didBody["did"],
+        didBody["privateKey"],
+        didBody["x"],
+        didBody["y"],
+      );
+    } else {
+      console.error(didRes);
+      throw new Error("Error recovering a DID");
     }
   }
 }
