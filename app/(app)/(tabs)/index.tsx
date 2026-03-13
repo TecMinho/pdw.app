@@ -458,7 +458,7 @@ export default function Home() {
     return (
       <ActivityIndicator
         size="large"
-        color="#0000ff"
+        color={Colors.current.tint} // "#0000ff"
         style={{ marginTop: 20 }}
       />
     );
@@ -524,7 +524,7 @@ export default function Home() {
             onPress={() => handleSelectExpired(!showExpired)}
             style={{
               flexDirection: "row",
-              backgroundColor: showExpired ? "#000" : "#f0f0f0",
+              backgroundColor: Colors.current.background,
               paddingHorizontal: 12,
               paddingVertical: 8,
               borderRadius: 15,
@@ -534,11 +534,11 @@ export default function Home() {
             <MaterialCommunityIcons
               name={showExpired ? "eye" : "eye-off"}
               size={13}
-              color={showExpired ? "white" : "black"}
+              color={Colors.current.text}
             />
             <Text
               style={{
-                color: showExpired ? "white" : "black",
+                color: Colors.current.text,
                 fontSize: 12,
                 fontWeight: "bold",
                 marginLeft: 8,
@@ -561,9 +561,10 @@ export default function Home() {
               alignItems: "center",
             }}
           >
-            <SimpleLineIcon name="magnifier" size={16} color="gray" />
+            <SimpleLineIcon name="magnifier" size={16} color={Colors.current.textMuted} />
             <TextInput
-              style={{ flex: 1, height: 40, marginLeft: 8 }}
+              style={{ flex: 1, height: 40, marginLeft: 8, color: Colors.light.text }}              
+              placeholderTextColor={Colors.current.textMuted} 
               placeholder={t("main.search")}
               onChangeText={setSearch}
               value={search}
@@ -572,7 +573,7 @@ export default function Home() {
               onPress={() => setIsSheetOpen(true)}
               style={{ marginLeft: 10 }}
             >
-              <SimpleLineIcon name="options-vertical" size={20} color="gray" />
+              <SimpleLineIcon name="options-vertical" size={20} color={Colors.current.textMuted} />
             </Pressable>
           </View>
         </>
