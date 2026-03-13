@@ -1,14 +1,14 @@
 {
   "name": "portuguese-digital-wallet",
   "main": "expo-router/entry",
-  "version": "1.3.0",
+  "version": "1.4.1",
   "scripts": {
     "start:prod": "expo start --no-dev",
     "start": "expo start",
     "prebuild": "expo prebuild",
     "android": "expo run:android",
     "android:bundle:test": "expo run:android --variant release",
-    "android:bundle": "cd android && gradlew app:bundleRelease && cd..",
+    "android:bundle": "cd android && ./gradlew app:bundleRelease && cd ..",
     "ios": "expo run:ios",
     "ios:bundle": "expo bundle:ios",
     "web": "expo start --web",

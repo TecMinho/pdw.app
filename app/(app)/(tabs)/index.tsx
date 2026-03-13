@@ -22,6 +22,7 @@ import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
 import { EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { useLocale } from "@/context/TranslationContext";
 import NoCredentialsView from "@/components/NoCredentialsView";
+import Colors from "@/constants/Colors";
 
 /**
  * Interface defining the props for the CredentialCard component
@@ -457,7 +458,7 @@ export default function Home() {
     return (
       <ActivityIndicator
         size="large"
-        color="#0000ff"
+        color={Colors.current.tint} // "#0000ff"
         style={{ marginTop: 20 }}
       />
     );
@@ -484,7 +485,7 @@ export default function Home() {
    */
   return (
     <>
-      <View style={{ padding: 20, backgroundColor: "white", flex: 1 }}>
+      <View style={{ padding: 20, backgroundColor: Colors.current.background, flex: 1 }}>
         <Modal visible={!!data}>
           <CredentialExpandedInfo data={data} status={""} />
           <FloatingButton
@@ -515,7 +516,7 @@ export default function Home() {
             marginBottom: 25,
           }}
         >
-          <Text style={{ fontSize: 28, fontWeight: "bold", flex: 1 }}>
+          <Text style={{ fontSize: 28, fontWeight: "bold", flex: 1, color: Colors.current.text }}>
             {t("main.credentials")}
           </Text>
 
@@ -523,7 +524,7 @@ export default function Home() {
             onPress={() => handleSelectExpired(!showExpired)}
             style={{
               flexDirection: "row",
-              backgroundColor: showExpired ? "#000" : "#f0f0f0",
+              backgroundColor: Colors.current.background,
               paddingHorizontal: 12,
               paddingVertical: 8,
               borderRadius: 15,
@@ -533,11 +534,11 @@ export default function Home() {
             <MaterialCommunityIcons
               name={showExpired ? "eye" : "eye-off"}
               size={13}
-              color={showExpired ? "white" : "black"}
+              color={Colors.current.text}
             />
             <Text
               style={{
-                color: showExpired ? "white" : "black",
+                color: Colors.current.text,
                 fontSize: 12,
                 fontWeight: "bold",
                 marginLeft: 8,
@@ -560,9 +561,10 @@ export default function Home() {
               alignItems: "center",
             }}
           >
-            <SimpleLineIcon name="magnifier" size={16} color="gray" />
+            <SimpleLineIcon name="magnifier" size={16} color={Colors.current.textMuted} />
             <TextInput
-              style={{ flex: 1, height: 40, marginLeft: 8 }}
+              style={{ flex: 1, height: 40, marginLeft: 8, color: Colors.light.text }}              
+              placeholderTextColor={Colors.current.textMuted} 
               placeholder={t("main.search")}
               onChangeText={setSearch}
               value={search}
@@ -571,7 +573,7 @@ export default function Home() {
               onPress={() => setIsSheetOpen(true)}
               style={{ marginLeft: 10 }}
             >
-              <SimpleLineIcon name="options-vertical" size={20} color="gray" />
+              <SimpleLineIcon name="options-vertical" size={20} color={Colors.current.textMuted} />
             </Pressable>
           </View>
         </>

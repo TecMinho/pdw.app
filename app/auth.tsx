@@ -1,6 +1,7 @@
 import useAuth from "@/providers/authProvider";
 import { View, StyleSheet, Text, Image, TouchableOpacity, Pressable, Linking } from "react-native";
 import { useLocale } from "@/context/TranslationContext";
+import Colors from "@/constants/Colors";
 
 /**
  * Authentication Screen Component
@@ -47,6 +48,7 @@ export default function AuthScreen() {
                 >
                     <Image
                         source={require("@/assets/images/logos/tecminho.png")}
+                        tintColor={Colors.current.image.getTintColor()}
                         style={{ width: 120, height: 120, resizeMode: "contain" }}
                         alt="Logo TecMinho"
                     />
@@ -57,6 +59,7 @@ export default function AuthScreen() {
                 >
                     <Image
                         source={require("@/assets/images/logos/ebsi.png")}
+                        tintColor={Colors.current.image.getTintColor()}
                         style={{ width: 120, height: 120, resizeMode: "contain" }}
                         alt="Logo EBSI"
                     />
@@ -72,21 +75,24 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "white",
+        backgroundColor: Colors.current.background,
         padding: 20,
     },
     logo: { width: 130, height: 100, resizeMode: "contain", marginBottom: 10 },
-    title: { fontSize: 32, fontFamily: "Lilita-One", color: "#43537C" },
-    subtitle: { fontSize: 18, fontWeight: "600", marginVertical: 5 },
+    title: { fontSize: 32, fontFamily: "Lilita-One", color: Colors.current.title },
+    subtitle: { fontSize: 18, fontWeight: "600", marginVertical: 5, color: Colors.current.text },
     description: {
         fontSize: 14,
-        color: "gray",
+        color: Colors.current.textMuted,
         textAlign: "center",
         marginBottom: 20,
     },
+    image: {
+        filter: 'grayscale(75%) opacity(90%)',
+    },
     button: {
         marginTop: 50,
-        backgroundColor: "#485cc7",
+        backgroundColor: Colors.current.primary.background, //"#485cc7",
         paddingVertical: 11,
         paddingHorizontal: 23,
         borderRadius: 25,
@@ -98,7 +104,7 @@ const styles = StyleSheet.create({
     },
     buttonDisabled: { backgroundColor: "#A0A0A0" },
     buttonText: {
-        color: "white",
+        color: Colors.current.primary.text,
         fontSize: 18,
         fontWeight: "600",
         textAlign: "center",
