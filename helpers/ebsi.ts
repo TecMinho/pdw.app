@@ -1,6 +1,7 @@
 import * as Crypto from "expo-crypto";
 import StorageHelper from "@/helpers/storage";
 import { getGlobalCredentialSelector } from "@/utils/credentialSelectorBridge";
+import { decodeJwt } from "jose";
 
 /**
  * EBSI Login Class
@@ -42,6 +43,7 @@ export class EBSIDID {
 
   did: string;
   privateKey: string;
+  seed?: string;
   x: string;
   y: string;
 
@@ -52,11 +54,18 @@ export class EBSIDID {
    * @param x - X coordinate of a public key
    * @param y - Y coordinate of a public key
    */
-  constructor(did: string, privateKey: string, x: string, y: string) {
+  constructor(
+    did: string,
+    privateKey: string,
+    x: string,
+    y: string,
+    seed?: string,
+  ) {
     this.did = did;
     this.privateKey = privateKey;
     this.x = x;
     this.y = y;
+    this.seed = seed;
   }
 
   /**
@@ -65,7 +74,13 @@ export class EBSIDID {
    * @returns New EBSIDID instance
    */
   static fromJson(json: any): EBSIDID {
-    return new EBSIDID(json["did"], json["privateKey"], json["x"], json["y"]);
+    return new EBSIDID(
+      json["did"],
+      json["privateKey"],
+      json["x"],
+      json["y"],
+      json["seed"],
+    );
   }
 
   /**
@@ -100,9 +115,80 @@ export class EBSIDID {
         didBody["privateKey"],
         didBody["x"],
         didBody["y"],
+        didBody["seed"],
       );
     } else {
       throw new Error("Error generating a new DID");
+    }
+  }
+
+  /**
+   * Generates a Verifiable Credential (VC) attesting ownership of a DID.
+   * Makes a POST request to the holder service to retrieve a signed DID credential.
+   * Decodes the returned JWT and constructs a verified credential instance.
+   * @param did The decentralized identifier (EBSIDID) to generate an attestation for.
+   * @returns Promise resolving to an EBSIVerifiableCredential instance or null.
+   * @throws Error if the API request fails or the response is invalid.
+   */
+  static async generateDidAttestation(
+    did: EBSIDID,
+  ): Promise<EBSIVerifiableCredential | null> {
+    const res = await fetch(`${this.apiBase}/holder/get_did_credential`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      body: JSON.stringify({ did }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const decodedPayload: any = decodeJwt(data.credential);
+      return EBSIServices.getVerifiableCredential(
+        decodedPayload,
+        data.credential,
+        "DID Attestation",
+        "",
+        "",
+      );
+    } else {
+      console.error(res);
+      throw new Error("Error generating DID attestation");
+    }
+  }
+
+  static async recoverDid(seed: string): Promise<EBSIDID> {
+    const didRes = await fetch(`${this.apiBase}/holder/recover_did_from_seed`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      body: JSON.stringify({ mnemonic: seed }),
+    });
+
+    if (didRes.ok) {
+      const didBody = await didRes.json();
+
+      if (
+        !didBody["did"] ||
+        !didBody["privateKey"] ||
+        !didBody["x"] ||
+        !didBody["y"]
+      ) {
+        throw new Error("Invalid DID response");
+      }
+
+      return new EBSIDID(
+        didBody["did"],
+        didBody["privateKey"],
+        didBody["x"],
+        didBody["y"],
+      );
+    } else {
+      console.error(didRes);
+      throw new Error("Error recovering a DID");
     }
   }
 }

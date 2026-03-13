@@ -1,6 +1,7 @@
 import React, {
   createContext,
   PropsWithChildren,
+  ReactNode,
   useCallback,
   useState,
 } from "react";
@@ -26,6 +27,7 @@ import { useLocale } from "@/context/TranslationContext";
  */
 interface TextDialogProperties extends Omit<DialogProps, "visible"> {
   title?: string;
+  secondaryAction?: ButtonProps;
   mainAction?: ButtonProps;
 }
 
@@ -41,7 +43,8 @@ interface TextDialogProviderProps {
    * @param text - The main text content to display in the dialog
    * @param properties - Optional dialog configuration (title, actions, etc.)
    */
-  enqueueDialog: (text: string, properties?: TextDialogProperties) => void;
+  enqueueDialog: (text: ReactNode, properties?: TextDialogProperties) => void;
+  dismissDialog: () => void;
 }
 
 /**
@@ -65,7 +68,7 @@ const TextDialogContext = createContext<TextDialogProviderProps | undefined>(
  * @param children - Child components that will have access to dialog context
  */
 export function TextDialogProvider({ children }: PropsWithChildren) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState<ReactNode>(null);
   const [dialogProperties, setDialogProperties] =
     useState<TextDialogProperties>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -111,7 +114,7 @@ export function TextDialogProvider({ children }: PropsWithChildren) {
    */
   const onDismiss = useCallback(() => {
     if (isLoading) return;
-    setText("");
+    setText(null);
     setDialogProperties({});
     dialogProperties.onDismiss?.();
   }, [dialogProperties, isLoading]);
@@ -132,14 +135,14 @@ export function TextDialogProvider({ children }: PropsWithChildren) {
    */
   return (
     <TextDialogContext.Provider
-      value={{ enqueueDialog: enqueueDialogCallback }}
+      value={{ enqueueDialog: enqueueDialogCallback, dismissDialog: onDismiss }}
     >
       <Dialog
         containerStyle={styles.roundedDialog}
         {...dialogProperties}
         visible={!!text}
         onDismiss={() => {
-          setText("");
+          setText(null);
           dialogProperties.onDismiss?.();
         }}
       >
@@ -152,9 +155,13 @@ export function TextDialogProvider({ children }: PropsWithChildren) {
             </View>
           )}
           <View margin-20 center>
-            <Text text70 center selectable>
-              {text}
-            </Text>
+            {typeof text === "string" ? (
+              <Text text70 center selectable>
+                {text}
+              </Text>
+            ) : (
+              text
+            )}
           </View>
           <View margin-20 row gap-20 right>
             <Button
@@ -164,6 +171,23 @@ export function TextDialogProvider({ children }: PropsWithChildren) {
               disabled={isLoading}
               onPress={onDismiss}
             />
+            {!!dialogProperties.secondaryAction && (
+              <Button
+                text70
+                disabled={isLoading}
+                {...dialogProperties.secondaryAction}
+                onPress={async () => {
+                  const func: any =
+                    dialogProperties.secondaryAction?.onPress?.();
+                  if (func instanceof Promise) {
+                    setIsLoading(true);
+                    await func;
+                    setIsLoading(false);
+                  }
+                  onDismiss();
+                }}
+              />
+            )}
             {!!dialogProperties.mainAction && (
               <Button
                 text70

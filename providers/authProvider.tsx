@@ -3,14 +3,20 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
+  useRef,
   useState,
 } from "react";
+import { Modal, StyleSheet, TextInput } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
+import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import StorageHelper from "@/helpers/storage";
 import { useTextDialog } from "@/providers/textDialogProvider";
-import { EBSIDID } from "@/helpers/ebsi";
+import { EBSIDID, EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { useLocale } from "@/context/TranslationContext";
+import { mutate } from "swr";
+import { Button, Text, View } from "react-native-ui-lib";
+import { Trans } from "react-i18next";
 
 /**
  * Authentication Context Interface
@@ -47,9 +53,131 @@ const AuthContext = createContext<AuthProviderProps | undefined>(undefined);
 export function AuthProvider({ children }: PropsWithChildren) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showImportSeedModal, setShowImportSeedModal] = useState(false);
+  const [showCreatedSeedModal, setShowCreatedSeedModal] = useState(false);
+  const [createdSeedPhrase, setCreatedSeedPhrase] = useState("");
+  const [seedPhraseWords, setSeedPhraseWords] = useState<string[]>(
+    Array.from({ length: 12 }, () => ""),
+  );
+  const createdSeedResolverRef = useRef<(() => void) | null>(null);
   const router = useRouter();
-  const { enqueueDialog } = useTextDialog();
+  const { enqueueDialog, dismissDialog } = useTextDialog();
   const { t } = useLocale();
+
+  const handleUpdateSeedWord = useCallback((index: number, value: string) => {
+    const normalizedWords = value
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    setSeedPhraseWords((previousWords) => {
+      const nextWords = [...previousWords];
+
+      if (normalizedWords.length <= 1) {
+        nextWords[index] = normalizedWords[0] ?? "";
+        return nextWords;
+      }
+
+      normalizedWords.forEach((word, wordOffset) => {
+        const targetIndex = index + wordOffset;
+        if (targetIndex < nextWords.length) {
+          nextWords[targetIndex] = word;
+        }
+      });
+
+      return nextWords;
+    });
+  }, []);
+
+  const closeImportSeedModal = useCallback(() => {
+    setShowImportSeedModal(false);
+    setSeedPhraseWords(Array.from({ length: 12 }, () => ""));
+  }, []);
+
+  const closeCreatedSeedModal = useCallback(() => {
+    setShowCreatedSeedModal(false);
+    setCreatedSeedPhrase("");
+    const resolve = createdSeedResolverRef.current;
+    createdSeedResolverRef.current = null;
+    resolve?.();
+  }, []);
+
+  const waitForCreatedSeedModalClose = useCallback(() => {
+    return new Promise<void>((resolve) => {
+      createdSeedResolverRef.current = resolve;
+      setShowCreatedSeedModal(true);
+    });
+  }, []);
+
+  const copyCreatedSeedPhrase = useCallback(async () => {
+    if (!createdSeedPhrase.trim()) return;
+    await Clipboard.setStringAsync(createdSeedPhrase);
+    enqueueDialog(t("misc.seed_phrase_copied"), {
+      title: t("misc.import_wallet"),
+    });
+  }, [createdSeedPhrase, enqueueDialog, t]);
+
+  const createNewWallet = useCallback(async (): Promise<EBSIDID> => {
+    const newDid = await EBSIDID.generateDid();
+    await StorageHelper.saveDID(newDid);
+
+    const credential = await EBSIDID.generateDidAttestation(newDid);
+    if (!credential) {
+      throw new Error("Failed to generate DID attestation");
+    }
+
+    const credentials = await StorageHelper.loadCredentials();
+    const updatedCredentials: EBSIVerifiableCredential[] = [
+      ...credentials,
+      credential,
+    ];
+
+    await StorageHelper.saveCredentials(updatedCredentials);
+    await StorageHelper.loadCredentials();
+    await mutate("credentials");
+    return newDid;
+  }, []);
+
+  const handleSeedPhraseImport = useCallback(async () => {
+    const hasAllWords = seedPhraseWords.every((word) => !!word.trim());
+    if (!hasAllWords) {
+      enqueueDialog(t("misc.seed_phrase_incomplete"), {
+        title: t("misc.import_wallet"),
+      });
+      return;
+    }
+    try {
+      setLoading(true);
+      const did = await EBSIDID.recoverDid(seedPhraseWords.join(" "));
+      await StorageHelper.saveDID(did);
+      const credential = await EBSIDID.generateDidAttestation(did);
+      if (!credential) {
+        throw new Error("Failed to generate DID attestation");
+      }
+
+      const credentials = await StorageHelper.loadCredentials();
+      const updatedCredentials: EBSIVerifiableCredential[] = [
+        ...credentials,
+        credential,
+      ];
+
+      await StorageHelper.saveCredentials(updatedCredentials);
+      await StorageHelper.loadCredentials();
+      await mutate("credentials");
+
+      closeImportSeedModal();
+      setIsAuthenticated(true);
+      router.replace("/(app)/(tabs)");
+    } catch (error) {
+      console.log(error);
+      enqueueDialog(t("misc.seed_phrase_import_failed"), {
+        title: t("misc.import_wallet"),
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [closeImportSeedModal, enqueueDialog, router, seedPhraseWords, t]);
 
   /**
    * Main Authentication Function
@@ -79,33 +207,69 @@ export function AuthProvider({ children }: PropsWithChildren) {
       promptMessage: t("misc.authenticate_to_continue"),
       fallbackLabel: t("misc.use_password"),
     });
+
+    if (!success) return;
+
     setLoading(true);
     if (
       !(await StorageHelper.hasDIDInfo()) ||
       !(await StorageHelper.loadDID())
     ) {
       try {
-        await new Promise((resolve, reject) => {
-          enqueueDialog(t("misc.no_wallet"), {
-            title: t("misc.create_wallet"),
-            onDismiss: () => {
-              reject("Dialog dismissed");
-            },
-            mainAction: {
-              label: t("misc.create"),
-              onPress: async () => {
-                try {
-                  const newDid = await EBSIDID.generateDid();
-                  await StorageHelper.saveDID(newDid).then(resolve);
-                } catch (e) {
-                  reject(e);
-                }
+        const walletAction = await new Promise<"create" | "import">(
+          (resolve, reject) => {
+            enqueueDialog(
+              <Text text70 center selectable>
+                <Trans
+                  i18nKey="misc.no_wallet_with_import"
+                  components={{
+                    importLink: (
+                      <Text
+                        text70
+                        color="#2563EB"
+                        style={{ textDecorationLine: "underline" }}
+                        onPress={() => {
+                          dismissDialog();
+                          setShowImportSeedModal(true);
+                          resolve("import");
+                        }}
+                      />
+                    ),
+                  }}
+                />
+              </Text>,
+              {
+              title: t("misc.create_wallet"),
+              onDismiss: () => {
+                reject("Dialog dismissed");
               },
-            },
-          });
-        });
+              mainAction: {
+                label: t("misc.create"),
+                onPress: async () => {
+                  try {
+                    const newDid = await createNewWallet();
+                    setCreatedSeedPhrase((newDid.seed || "").trim());
+                    resolve("create");
+                  } catch (e) {
+                    reject(e);
+                  }
+                },
+              },
+            });
+          },
+        );
+
+        if (walletAction === "create") {
+          await waitForCreatedSeedModalClose();
+        }
       } catch (e) {
         console.log(e);
+        setLoading(false);
+        return;
+      }
+
+      const did = await StorageHelper.loadDID();
+      if (!did) {
         setLoading(false);
         return;
       }
@@ -117,7 +281,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
 
     setLoading(false);
-  }, [enqueueDialog, loading, router]);
+  }, [
+    createNewWallet,
+    dismissDialog,
+    enqueueDialog,
+    loading,
+    router,
+    t,
+    waitForCreatedSeedModalClose,
+  ]);
 
   /**
    * Context Provider Render
@@ -137,9 +309,120 @@ export function AuthProvider({ children }: PropsWithChildren) {
       value={{ isAuthenticated, setIsAuthenticated, authenticate, loading }}
     >
       {children}
+      <Modal visible={showImportSeedModal} animationType="fade" transparent>
+        <View style={styles.overlay}>
+          <View style={styles.modalContainer}>
+            <Text text60 center marginB-6>
+              {t("misc.import_wallet")}
+            </Text>
+            <Text text80 center marginB-14>
+              {t("misc.enter_seed_phrase")}
+            </Text>
+            <View style={styles.seedGrid}>
+              {seedPhraseWords.map((word, index) => (
+                <TextInput
+                  key={`seed-word-${index}`}
+                  value={word}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onChangeText={(value) => handleUpdateSeedWord(index, value)}
+                  placeholder={`${index + 1}.`}
+                  style={styles.seedInput}
+                />
+              ))}
+            </View>
+            <View row right gap-10 marginT-16>
+              <Button
+                label={t("misc.cancel")}
+                outline
+                onPress={closeImportSeedModal}
+              />
+              <Button
+                label={t("misc.import")}
+                onPress={handleSeedPhraseImport}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal visible={showCreatedSeedModal} animationType="fade" transparent>
+        <View style={styles.overlay}>
+          <View style={styles.modalContainer}>
+            <Text text60 center marginB-6>
+              {t("misc.your_seed_phrase")}
+            </Text>
+            <Text text80 center marginB-14>
+              {t("misc.save_seed_phrase_warning")}
+            </Text>
+            <View style={styles.seedPhraseBox}>
+              <Text text70 center selectable>
+                {createdSeedPhrase || t("misc.seed_phrase_unavailable")}
+              </Text>
+            </View>
+            <View row right gap-10 marginT-16>
+              <Button
+                label={t("misc.copy_seed_phrase")}
+                outline
+                disabled={!createdSeedPhrase}
+                onPress={copyCreatedSeedPhrase}
+              />
+              <Button
+                label={t("misc.continue")}
+                onPress={closeCreatedSeedModal}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </AuthContext.Provider>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.45)",
+    paddingHorizontal: 16,
+  },
+  modalContainer: {
+    width: "100%",
+    maxWidth: 420,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 18,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  seedGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  seedInput: {
+    width: "31%",
+    minWidth: 92,
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: "#F9FAFB",
+    fontSize: 14,
+  },
+  seedPhraseBox: {
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 8,
+    backgroundColor: "#F9FAFB",
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+  },
+});
 
 /**
  * Authentication Hook
