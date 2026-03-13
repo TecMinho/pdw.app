@@ -25,6 +25,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BackHandler } from "react-native";
 import { useLocale } from "@/context/TranslationContext";
+import ThemeColors from "@/constants/Colors";
+import { Background } from "@react-navigation/elements";
 
 export default function Scanner() {
   const { t } = useLocale();
@@ -51,8 +53,8 @@ export default function Scanner() {
       headerLeft: () => (
         <Ionicons
           name="chevron-back-outline"
-          size={24}
-          color="black"
+          size={28}
+          color={ThemeColors.current.text}
           style={{ marginLeft: 15 }}
           onPress={() => {
             if (loading) {
@@ -63,9 +65,13 @@ export default function Scanner() {
           }}
         />
       ),
+      headerStyle: {
+        backgroundColor: ThemeColors.current.background,
+      },
       headerTitleStyle: {
-        fontWeight: "bold",
-        fontSize: 24,
+        fontSize: 28, 
+        fontWeight: "bold", 
+        color: ThemeColors.current.text,
       },
     });
   }, [navigation, loading]);
@@ -317,7 +323,7 @@ export default function Scanner() {
   if (hasPermission === null) {
     return (
       <View style={styles.container}>
-        <Text>{t("scanner.requesting_camera_permission")}</Text>
+        <Text style={styles.title}>{t("scanner.requesting_camera_permission")}</Text>
       </View>
     );
   }
@@ -325,7 +331,7 @@ export default function Scanner() {
   if (!hasPermission) {
     return (
       <View style={styles.container}>
-        <Text>{t("scanner.camera_no_access")}</Text>
+        <Text style={styles.title}>{t("scanner.camera_no_access")}</Text>
       </View>
     );
   }
@@ -533,7 +539,27 @@ export default function Scanner() {
  */
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: ThemeColors.current.background,
     flex: 1,
     flexDirection: "column",
+    alignItems: "center",
+  },
+  title: {
+      fontSize: 24,
+      fontWeight: "bold",
+      paddingTop: 30,
+      paddingBottom: 15,
+      color: ThemeColors.current.title,
+  },
+  text: {
+      fontSize: 16,
+      color: ThemeColors.current.text,
+  },
+  link: {
+      cursor: "pointer",
+      color: ThemeColors.current.tint,
+  },
+  linkPressed: {
+      opacity: 0.7
   },
 });

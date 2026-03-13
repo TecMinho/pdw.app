@@ -48,6 +48,7 @@ export default function AuthScreen() {
                 >
                     <Image
                         source={require("@/assets/images/logos/tecminho.png")}
+                        tintColor={Colors.current.image.getTintColor()}
                         style={{ width: 120, height: 120, resizeMode: "contain" }}
                         alt="Logo TecMinho"
                     />
@@ -58,6 +59,7 @@ export default function AuthScreen() {
                 >
                     <Image
                         source={require("@/assets/images/logos/ebsi.png")}
+                        tintColor={Colors.current.image.getTintColor()}
                         style={{ width: 120, height: 120, resizeMode: "contain" }}
                         alt="Logo EBSI"
                     />
@@ -84,6 +86,9 @@ const styles = StyleSheet.create({
         color: Colors.current.textMuted,
         textAlign: "center",
         marginBottom: 20,
+    },
+    image: {
+        filter: 'grayscale(75%) opacity(90%)',
     },
     button: {
         marginTop: 50,
