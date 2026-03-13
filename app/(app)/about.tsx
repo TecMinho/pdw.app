@@ -17,27 +17,6 @@ export default function About() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
 
-    const styles = StyleSheet.create({
-        title: {
-            fontSize: 24,
-            fontWeight: "bold",
-            paddingTop: 30,
-            paddingBottom: 15,
-            color: Colors.current.title,
-        },
-        text: {
-            fontSize: 16,
-            color: Colors.current.text,
-        },
-        link: {
-            cursor: "pointer",
-            color: Colors.current.tint,
-        },
-        linkPressed: {
-            opacity: 0.7
-        }
-    });
-
     /**
      * Main Render Method - About Page
      */
@@ -89,6 +68,7 @@ export default function About() {
                     >
                         <Image
                             source={require("@/assets/images/pdw_capabilities.png")}
+                            // tintColor={Colors.current.image.tint}
                             style={{ width: 150, height: 150, resizeMode: "contain" }}
                             alt="PDW Capabilities"
                         />
@@ -99,6 +79,7 @@ export default function About() {
                     >
                         <Image
                             source={require("@/assets/images/logos/ebsi.png")}
+                            tintColor={Colors.current.image.getTintColor()}
                             style={{ width: 120, height: 120, resizeMode: "contain" }}
                             alt="Logo EBSI"
                         />
@@ -117,6 +98,9 @@ export default function About() {
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "space-between",
+                        borderBottomColor: Colors.current.tint,
+                        borderBottomWidth: 1,
+                        paddingBottom: 20,
                     }}
                 >
                     <Pressable
@@ -125,6 +109,7 @@ export default function About() {
                     >
                         <Image
                             source={require("@/assets/images/logos/agenda.png")}
+                            tintColor={Colors.current.image.getTintColor()}
                             style={{ width: 200, height: 60, resizeMode: "contain" }}
                             alt="Logo Agenda Blockchain.PT"
                         />
@@ -135,6 +120,7 @@ export default function About() {
                     >
                         <Image
                             source={require("@/assets/images/logos/tecminho.png")}
+                            tintColor={Colors.current.image.getTintColor()}
                             style={{ width: 120, height: 70, resizeMode: "contain" }}
                             alt="Logo TecMinho"
                         />
@@ -169,13 +155,14 @@ export default function About() {
                 >
                     <Image
                         source={require("@/assets/images/logos/cofinanciamento.png")}
+                        // tintColor={Colors.current.image.getTintColor()}
                         style={{ width: "100%", height: 80, resizeMode: "contain" }}
                         alt="Barra de assinaturas PRR"
                     />
                 </Pressable>
 
                 <Text
-                    style={{ fontSize: 10, flex: 1, alignItems: "center", textAlign: "center", marginTop: 5, marginBottom: 10 }}
+                    style={[styles.text, { fontSize: 10, flex: 1, alignItems: "center", textAlign: "center", marginTop: 5, marginBottom: 10 }]}
                 >
                     {Constants.expoConfig?.version ? t("about.version_info", { version: Constants.expoConfig.version }) : t("about.version_info_unknown")   }
                 </Text>
@@ -187,3 +174,24 @@ export default function About() {
     );
 
 }
+
+const styles = StyleSheet.create({
+    title: {
+        fontSize: 24,
+        fontWeight: "bold",
+        paddingTop: 30,
+        paddingBottom: 15,
+        color: Colors.current.title,
+    },
+    text: {
+        fontSize: 16,
+        color: Colors.current.text,
+    },
+    link: {
+        cursor: "pointer",
+        color: Colors.current.tint,
+    },
+    linkPressed: {
+        opacity: 0.7
+    },
+});

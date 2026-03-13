@@ -23,6 +23,7 @@ import { useLocale } from "@/context/TranslationContext";
 import * as Clipboard from 'expo-clipboard';
 import DIDQRCode from "@/components/DIDQRCode";
 import {default as ThemeColors} from "@/constants/Colors";
+
 /**
  * Settings Screen Component - Wallet Management Interface
  *
@@ -336,6 +337,7 @@ export default function Home() {
         >
           <Image
             source={require("@/assets/images/logos/ebsi.png")}
+            tintColor={ThemeColors.current.image.getTintColor()}
             style={{ width: 120, height: 120, resizeMode: "contain" }}
             alt="Logo EBSI"
           />
@@ -346,6 +348,7 @@ export default function Home() {
         >
           <Image
             source={require("@/assets/images/logos/tecminho.png")}
+            tintColor={ThemeColors.current.image.getTintColor()}
             style={{ width: 120, height: 120, resizeMode: "contain" }}
             alt="Logo TecMinho"
           />
@@ -354,7 +357,7 @@ export default function Home() {
 
       <Modal
         visible={isOfferModalOpen}
-        animationType="slide"
+        animationType="fade"
         transparent
         onRequestClose={() => setOfferModalOpen(false)}
       >
@@ -508,7 +511,7 @@ export default function Home() {
 
       <Modal
         visible={isViewDIDModalOpen}
-        animationType="slide"
+        animationType="fade"
         transparent
         onRequestClose={() => setViewDIDModalOpen(false)}
         onShow={() => {

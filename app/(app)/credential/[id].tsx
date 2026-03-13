@@ -10,6 +10,7 @@ import { ActionSheet } from "react-native-ui-lib";
 import { useTextDialog } from "@/providers/textDialogProvider";
 import { generateAndSharePDF } from "@/utils/pdfGenerator";
 import { useLocale } from "@/context/TranslationContext";
+import ThemeColors from "@/constants/Colors";
 
 /**
  * Credential Detail Page Component
@@ -109,7 +110,7 @@ export default function CredentialPage() {
    * - Real-time status indicators
    */
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <View style={{ flex: 1, backgroundColor: ThemeColors.current.background }}>
       <View
         style={{
           flexDirection: "row",
@@ -122,14 +123,14 @@ export default function CredentialPage() {
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Pressable onPress={() => router.replace("/(app)/(tabs)")}>
-            <Ionicons name="chevron-back-outline" size={24} />
+            <Ionicons name="chevron-back-outline" size={28} color={ThemeColors.current.text} />
           </Pressable>
-          <Text style={{ fontSize: 24, fontWeight: "bold", marginLeft: 2 }}>
+          <Text style={{ fontSize: 28, fontWeight: "bold", marginLeft: 2 , color: ThemeColors.current.text}}>
             {t("credentials.credential_details")}
           </Text>
         </View>
         <Pressable onPress={() => setIsSheetOpen(true)}>
-          <SimpleLineIcon name="options-vertical" size={20} color="gray" />
+          <SimpleLineIcon name="options-vertical" size={20} color={ThemeColors.current.text} />
         </Pressable>
       </View>
 

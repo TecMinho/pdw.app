@@ -1,7 +1,8 @@
 import { Link, Stack } from "expo-router";
 import { StyleSheet } from "react-native";
-import { Colors, Text, View } from "react-native-ui-lib";
+import { Text, View } from "react-native-ui-lib";
 import { useLocale } from "@/context/TranslationContext";
+import Colors from "@/constants/Colors";
 
 /**
  * Not Found Screen Component

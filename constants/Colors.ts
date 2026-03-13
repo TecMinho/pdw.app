@@ -9,9 +9,12 @@ const colorScheme = Appearance.getColorScheme() || 'light';
 const light = {
   text: '#111',
   title: tintColorLight,
-  textMuted: '303030',
+  textMuted: '#303030',
   background: '#fff',
   tint: tintColorLight,
+  image: {
+    getTintColor: () => undefined,
+  },
   tabIconDefault: '#ccc',
   tabIconSelected: tintColorLight,
   primary: {
@@ -24,8 +27,11 @@ const dark = {
   text: '#fff',
   title: tintColorDark,
   textMuted: '#A0A0A0',
-  background: '#111',
+  background: '#121212',
   tint: tintColorDark,
+  image: {
+    getTintColor: () => '#ffffffdd',
+  },
   tabIconDefault: '#ccc',
   tabIconSelected: tintColorDark,
   primary: {
@@ -46,4 +52,5 @@ export default {
   light,
   dark,
   current: colorScheme === 'dark' ? dark : light,
+
 };
