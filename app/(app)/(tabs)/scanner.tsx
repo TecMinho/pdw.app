@@ -539,7 +539,7 @@ export default function Scanner() {
  */
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: ThemeColors.current.background + "00",
+    backgroundColor: ThemeColors.current.background + "55",
     flex: 1,
     flexDirection: "column",
     alignItems: "center",
