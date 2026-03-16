@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
-import { Modal, SafeAreaView, StyleSheet } from "react-native";
+import { Modal, StyleSheet } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, CameraView } from "expo-camera";
 import {
   Colors,
@@ -26,7 +27,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BackHandler } from "react-native";
 import { useLocale } from "@/context/TranslationContext";
 import ThemeColors from "@/constants/Colors";
-import { Background } from "@react-navigation/elements";
 
 export default function Scanner() {
   const { t } = useLocale();
@@ -539,7 +539,7 @@ export default function Scanner() {
  */
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: ThemeColors.current.background,
+    backgroundColor: ThemeColors.current.background + "00",
     flex: 1,
     flexDirection: "column",
     alignItems: "center",

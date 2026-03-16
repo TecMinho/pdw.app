@@ -12,6 +12,7 @@ import { useLocalSearchParams } from "expo-router";
 import StorageHelper from "@/helpers/storage";
 import { EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { useLocale } from "@/context/TranslationContext";
+import Colors from "@/constants/Colors";
 
 /**
  * Props interface for the CredentialExpandedInfo component
@@ -321,7 +322,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 5,
     marginBottom: 10,
-    color: "#333",
+    color: Colors.current.title,
     alignSelf: "center",
     textAlign: "center",
   },
