@@ -539,10 +539,9 @@ export default function Scanner() {
  */
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: ThemeColors.current.background + "55",
+    backgroundColor: ThemeColors.current.background,
     flex: 1,
     flexDirection: "column",
-    alignItems: "center",
   },
   title: {
       fontSize: 24,
