@@ -17,6 +17,7 @@ import { useLocale } from "@/context/TranslationContext";
 import { mutate } from "swr";
 import { Button, Text, View } from "react-native-ui-lib";
 import { Trans } from "react-i18next";
+import Colors from "@/constants/Colors";
 
 /**
  * Authentication Context Interface
@@ -226,7 +227,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
                     importLink: (
                       <Text
                         text70
-                        color="#2563EB"
+                        color={Colors.current.tint}
                         style={{ textDecorationLine: "underline" }}
                         onPress={() => {
                           dismissDialog();
@@ -254,6 +255,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
                     reject(e);
                   }
                 },
+              },
+              secondaryAction: {
+                label: t("misc.import"),
+                link: true,
+                onPress: () => {
+                  dismissDialog();
+                  setShowImportSeedModal(true);
+                  resolve("import");
+                }
               },
             });
           },
