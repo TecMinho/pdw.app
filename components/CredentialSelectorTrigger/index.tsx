@@ -3,9 +3,9 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
-  SafeAreaView,
   ScrollView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Checkbox, Text, View } from "react-native-ui-lib";
 import StorageHelper from "@/helpers/storage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
