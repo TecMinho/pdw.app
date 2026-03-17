@@ -240,6 +240,6 @@ export async function generateAndSharePDF(
       });
     }
   } catch (error) {
-    throw error;
+    console.error("Erro ao criar o PDF:", error);
   }
 }
