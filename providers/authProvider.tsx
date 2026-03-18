@@ -320,6 +320,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
               {seedPhraseWords.map((word, index) => (
                 <TextInput
                   key={`seed-word-${index}`}
+                  placeholderTextColor={Colors.current.textMuted}
                   value={word}
                   autoCapitalize="none"
                   autoCorrect={false}

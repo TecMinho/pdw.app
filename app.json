@@ -3,7 +3,7 @@
     "name": "Portuguese Digital Wallet",
     "slug": "portuguese-digital-wallet",
     "newArchEnabled": true,
-    "version": "1.4.3",
+    "version": "1.4.4",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon.png",
     "scheme": "portuguese-digital-wallet",
@@ -17,7 +17,7 @@
       "**/*"
     ],
     "ios": {
-      "buildNumber": "1",
+      "buildNumber": "2",
       "supportsTablet": true,
       "bundleIdentifier": "pt.tecminho.pdw.ios",
       "infoPlist": {
@@ -28,7 +28,7 @@
       "backgroundColor": "#ffffff"
     },
     "android": {
-      "versionCode": 18,
+      "versionCode": 20,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
