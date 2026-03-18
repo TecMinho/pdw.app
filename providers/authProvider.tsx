@@ -16,7 +16,6 @@ import { EBSIDID, EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { useLocale } from "@/context/TranslationContext";
 import { mutate } from "swr";
 import { Button, Text, View } from "react-native-ui-lib";
-import { Trans } from "react-i18next";
 import Colors from "@/constants/Colors";
 
 /**
@@ -221,23 +220,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           (resolve, reject) => {
             enqueueDialog(
               <Text text70 center selectable>
-                <Trans
-                  i18nKey="misc.no_wallet_with_import"
-                  components={{
-                    importLink: (
-                      <Text
-                        text70
-                        color={Colors.current.tint}
-                        style={{ textDecorationLine: "underline" }}
-                        onPress={() => {
-                          dismissDialog();
-                          setShowImportSeedModal(true);
-                          resolve("import");
-                        }}
-                      />
-                    ),
-                  }}
-                />
+                {t("misc.no_wallet")}
               </Text>,
               {
               title: t("misc.create_wallet"),
@@ -257,14 +240,19 @@ export function AuthProvider({ children }: PropsWithChildren) {
                 },
               },
               secondaryAction: {
-                label: t("misc.import"),
-                link: true,
+                label: t("misc.import_wallet"),
+                outline: true,
                 onPress: () => {
                   dismissDialog();
                   setShowImportSeedModal(true);
                   resolve("import");
                 }
               },
+              dismissAction: {
+                label: t("misc.close"),
+                color: Colors.textColorDefault,
+                link: true,
+              }
             });
           },
         );
