@@ -68,7 +68,7 @@ export const CredentialCard: React.FC<CredentialCardProps> = ({
 }) => {
   const isRevoked = status === "revoked";
   const isExpired = status === "expired";
-  const cardColor = isRevoked ? "#D0E7FF" : "#c8edff";
+  const cardColor = isRevoked ? Colors.current.danger?.lighterBackground : Colors.current.success?.lighterBackground;
   return (
     <Pressable onPress={onPress} style={{ padding: 5 }}>
       <ImageBackground

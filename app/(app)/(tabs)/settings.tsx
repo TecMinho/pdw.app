@@ -109,6 +109,10 @@ export default function Home() {
           mutate("credentials");
         },
       },
+      dismissAction: {
+        label: t("misc.close"),
+        color: ThemeColors.textColorDefault,
+      }
     });
   };
 
@@ -128,6 +132,10 @@ export default function Home() {
           setIsAuthenticated(false);
         },
       },
+      dismissAction: {
+        label: t("misc.close"),
+        color: ThemeColors.textColorDefault,
+      }
     });
   };
 
@@ -418,10 +426,6 @@ export default function Home() {
                     ? t("settings.issuing")
                     : t("settings.issue_credential")
                 }
-                color={ThemeColors.current.primary.background}
-                outline={true}
-                outlineColor={ThemeColors.current.primary.background}
-
                 onPress={async () => {
                   console.log("Fetching offer from URL:", offerUrl);
                   setFetching(true);
@@ -495,8 +499,7 @@ export default function Home() {
 
               <Button
                 label={t("settings.cancel")}
-                color={ThemeColors.current.primary.text}
-                backgroundColor={ThemeColors.current.primary.background}
+                outline={true}
                 onPress={() => {
                   setOfferModalOpen(false);
                   setOfferUrl("");
@@ -548,9 +551,6 @@ export default function Home() {
             <View style={{ gap: 10 }}>
               <Button
                 label={t("settings.copy_did")}
-                color={ThemeColors.current.primary.background}
-                outlineColor={ThemeColors.current.primary.background}
-                outline={true}
                 onPress={() => {
                   handleCopyDID();
                   setViewDIDModalOpen(false);
@@ -559,9 +559,8 @@ export default function Home() {
               />
 
               <Button
-                label={t("settings.cancel")}
-                color={ThemeColors.current.primary.text}
-                backgroundColor={ThemeColors.current.primary.background}
+                label={t("misc.close")}
+                outline={true}
                 onPress={() => {
                   setViewDIDModalOpen(false);
                 }}
