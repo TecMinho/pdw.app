@@ -27,6 +27,7 @@ import { useLocale } from "@/context/TranslationContext";
  */
 interface TextDialogProperties extends Omit<DialogProps, "visible"> {
   title?: string;
+  dismissAction?: ButtonProps;
   secondaryAction?: ButtonProps;
   mainAction?: ButtonProps;
 }
@@ -167,6 +168,7 @@ export function TextDialogProvider({ children }: PropsWithChildren) {
             <Button
               text70
               label={t("misc.close")}
+              {...dialogProperties.dismissAction}
               link
               disabled={isLoading}
               onPress={onDismiss}
