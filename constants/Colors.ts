@@ -97,14 +97,12 @@ const dark: ColorSchemaProps = {
   },
 };
 
-// Set the react native ui lib schema
-// Colors.setScheme(<SchemeType> colorScheme);
 
 // Load custom colors and schemes into react-native-ui-lib
 Colors.loadColors({
   error: '#ff2442',
   success: '#00CD8B',
-  text: '#20303C'
+  text: '#20303C',
 });
 
 Colors.loadSchemes({
@@ -115,6 +113,7 @@ Colors.loadSchemes({
     $textSuccess: "#00bc7d",
     $textSuccessLight: "#e7fff5",
     $textDanger: "#ec003f",
+
     $outlinePrimary: tintColorLight,
     
     $backgroundPrimaryHeavy: tintColorLight,
@@ -140,6 +139,10 @@ Colors.loadSchemes({
     $backgroundDangerLight: "#ffccd3",
   }
 });
+
+// Set the react native ui lib schema
+// Colors.setScheme(<SchemeType> colorScheme);
+Colors.setScheme("light"); // Always Light
 
 
 /**
