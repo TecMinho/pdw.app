@@ -1,5 +1,5 @@
 import { Appearance } from 'react-native';
-import {Colors} from 'react-native-ui-lib';
+import {Colors/*, SchemeType */} from 'react-native-ui-lib';
 
 interface ColorSchemaProps {
   text: string;
@@ -17,12 +17,11 @@ interface ColorSchemaProps {
   warning?: { text: string, background: string, lighterBackground?: string};
 }
 
+const colorScheme: string = Appearance.getColorScheme() || 'light';
 
-const colorScheme = Appearance.getColorScheme() || 'light';
-
-const textColorDefault = '#111';
-const tintColorLight = '#39AD70';
-const tintColorDark = '#39AD70';
+const textColorDefault: string = '#111';
+const tintColorLight: string = '#39AD70';
+const tintColorDark: string = '#39AD70';
 
 
 const light: ColorSchemaProps = {
@@ -98,6 +97,9 @@ const dark: ColorSchemaProps = {
   },
 };
 
+// Set the react native ui lib schema
+// Colors.setScheme(<SchemeType> colorScheme);
+
 // Load custom colors and schemes into react-native-ui-lib
 Colors.loadColors({
   error: '#ff2442',
@@ -108,6 +110,7 @@ Colors.loadColors({
 Colors.loadSchemes({
   light: {
     $textDefault: "#111",
+    $textDefaultLight: "#fff",
     $textPrimary: tintColorLight,
     $textSuccess: "#00bc7d",
     $textSuccessLight: "#e7fff5",
@@ -122,6 +125,7 @@ Colors.loadSchemes({
   },
   dark: {
     $textDefault: "#fff",
+    $textDefaultLight: "#111",
     $textPrimary: tintColorDark,
     $textSuccess: "#00bc7d",
     $textSuccessLight: "#e7fff5",
@@ -150,5 +154,6 @@ export default {
   light,
   dark,
   textColorDefault,
+  currentColorScheme: colorScheme,
   current: colorScheme === 'dark' ? dark : light,
 };
