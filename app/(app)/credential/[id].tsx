@@ -5,7 +5,7 @@ import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
 import { View, Text, Pressable } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import SimpleLineIcon from "react-native-vector-icons/SimpleLineIcons";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ActionSheet } from "react-native-ui-lib";
 import { useTextDialog } from "@/providers/textDialogProvider";
 import { generateAndSharePDF } from "@/utils/pdfGenerator";
@@ -123,14 +123,29 @@ export default function CredentialPage() {
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Pressable onPress={() => router.replace("/(app)/(tabs)")}>
-            <Ionicons name="chevron-back-outline" size={28} color={ThemeColors.current.text} />
+            <Ionicons
+              name="chevron-back-outline"
+              size={28}
+              color={ThemeColors.current.text}
+            />
           </Pressable>
-          <Text style={{ fontSize: 28, fontWeight: "bold", marginLeft: 2 , color: ThemeColors.current.text}}>
+          <Text
+            style={{
+              fontSize: 28,
+              fontWeight: "bold",
+              marginLeft: 2,
+              color: ThemeColors.current.text,
+            }}
+          >
             {t("credentials.credential_details")}
           </Text>
         </View>
         <Pressable onPress={() => setIsSheetOpen(true)}>
-          <SimpleLineIcon name="options-vertical" size={20} color={ThemeColors.current.text} />
+          <SimpleLineIcon
+            name="options-vertical"
+            size={20}
+            color={ThemeColors.current.text}
+          />
         </Pressable>
       </View>
 
@@ -148,7 +163,10 @@ export default function CredentialPage() {
         options={[
           {
             label: t("credentials.generate_pdf"),
-            onPress: () => generateAndSharePDF(credential),
+            onPress: async () => {
+              setIsSheetOpen(false);
+              await generateAndSharePDF(credential);
+            },
           },
           {
             label: t("credentials.delete_this_credential"),
