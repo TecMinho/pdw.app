@@ -53,6 +53,7 @@ const AuthContext = createContext<AuthProviderProps | undefined>(undefined);
 export function AuthProvider({ children }: PropsWithChildren) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [importErrorMessage, setImportErrorMessage] = useState("");
   const [showImportSeedModal, setShowImportSeedModal] = useState(false);
   const [showCreatedSeedModal, setShowCreatedSeedModal] = useState(false);
   const [createdSeedPhrase, setCreatedSeedPhrase] = useState("");
@@ -142,9 +143,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const handleSeedPhraseImport = useCallback(async () => {
     const hasAllWords = seedPhraseWords.every((word) => !!word.trim());
     if (!hasAllWords) {
-      enqueueDialog(t("misc.seed_phrase_incomplete"), {
-        title: t("misc.import_wallet"),
-      });
+      setImportErrorMessage(t("misc.seed_phrase_incomplete"));
       return;
     }
     try {
@@ -152,7 +151,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const did = await EBSIDID.recoverDid(seedPhraseWords.join(" "));
       await StorageHelper.saveDID(did);
       const credential = await EBSIDID.generateDidAttestation(did);
-      if (!credential) {
+      if (!credential) {        
         throw new Error("Failed to generate DID attestation");
       }
 
@@ -170,10 +169,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setIsAuthenticated(true);
       router.replace("/(app)/(tabs)");
     } catch (error) {
-      console.log(error);
-      enqueueDialog(t("misc.seed_phrase_import_failed"), {
-        title: t("misc.import_wallet"),
-      });
+      setImportErrorMessage(t("misc.seed_phrase_import_failed"));
     } finally {
       setLoading(false);
     }
@@ -209,7 +205,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     });
 
     if (!success) return;
-
+    
     setLoading(true);
     if (
       !(await StorageHelper.hasDIDInfo()) ||
@@ -223,45 +219,61 @@ export function AuthProvider({ children }: PropsWithChildren) {
                 {t("misc.no_wallet")}
               </Text>,
               {
-              title: t("misc.create_wallet"),
-              onDismiss: () => {
-                reject("Dialog dismissed");
-              },
-              mainAction: {
-                label: t("misc.create"),
-                onPress: async () => {
-                  try {
-                    const newDid = await createNewWallet();
-                    setCreatedSeedPhrase((newDid.seed || "").trim());
-                    resolve("create");
-                  } catch (e) {
-                    reject(e);
+                title: t("misc.create_wallet"),
+                onDismiss: () => {
+                  reject("cancel");
+                  dismissDialog();
+                },
+                mainAction: {
+                  label: t("misc.create"),
+                  onPress: async () => {
+                    try {
+                      resolve("create");
+                      dismissDialog();
+                    } catch (e) {
+                      reject(e);
+                    }
+                  },
+                },
+                secondaryAction: {
+                  label: t("misc.import_wallet"),
+                  outline: true,
+                  onPress: () => {
+                    resolve("import");
+                    dismissDialog();
                   }
                 },
-              },
-              secondaryAction: {
-                label: t("misc.import_wallet"),
-                outline: true,
-                onPress: () => {
-                  dismissDialog();
-                  setShowImportSeedModal(true);
-                  resolve("import");
+                dismissAction: {
+                  label: t("misc.close"),
+                  color: Colors.textColorDefault,
+                  link: true,
                 }
-              },
-              dismissAction: {
-                label: t("misc.close"),
-                color: Colors.textColorDefault,
-                link: true,
               }
-            });
+            );
           },
         );
 
-        if (walletAction === "create") {
-          await waitForCreatedSeedModalClose();
+        // dismissDialog();
+
+        if (walletAction === "import") {
+          // Allow the UI to full dismiss the dialog
+          setTimeout(() => {
+            setImportErrorMessage("");
+            setShowImportSeedModal(true);
+          }, 10);
         }
+
+        if (walletAction === "create") {
+          // Allow the UI to full dismiss the dialog
+          setTimeout(async () => {
+            const newDid = await createNewWallet();
+            setCreatedSeedPhrase((newDid.seed || "").trim());
+
+            await waitForCreatedSeedModalClose();
+          }, 10);
+        }
+
       } catch (e) {
-        console.log(e);
         setLoading(false);
         return;
       }
@@ -330,6 +342,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
                 />
               ))}
             </View>
+            if (!!importErrorMessage) {
+            <View row right gap-10 marginT-6>
+              <Text text80 color={Colors.current.danger?.background} center >
+                { importErrorMessage }
+              </Text>              
+            </View>
+            }
             <View row right gap-10 marginT-16>
               <Button
                 label={t("misc.cancel")}
