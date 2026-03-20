@@ -99,6 +99,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const closeCreatedSeedModal = useCallback(() => {
     setShowCreatedSeedModal(false);
     setCreatedSeedPhrase("");
+    setIsAuthenticated(true);
+    router.replace("/(app)/(tabs)");
     const resolve = createdSeedResolverRef.current;
     createdSeedResolverRef.current = null;
     resolve?.();
@@ -121,7 +123,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const createNewWallet = useCallback(async (): Promise<EBSIDID> => {
     const newDid = await EBSIDID.generateDid();
-    await StorageHelper.saveDID(newDid);
+    const { seed, ...did } = newDid;
+    await StorageHelper.saveDID(did);
 
     const credential = await EBSIDID.generateDidAttestation(newDid);
     if (!credential) {
@@ -151,7 +154,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const did = await EBSIDID.recoverDid(seedPhraseWords.join(" "));
       await StorageHelper.saveDID(did);
       const credential = await EBSIDID.generateDidAttestation(did);
-      if (!credential) {        
+      if (!credential) {
         throw new Error("Failed to generate DID attestation");
       }
 
@@ -205,7 +208,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     });
 
     if (!success) return;
-    
+
     setLoading(true);
     if (
       !(await StorageHelper.hasDIDInfo()) ||
@@ -241,14 +244,14 @@ export function AuthProvider({ children }: PropsWithChildren) {
                   onPress: () => {
                     resolve("import");
                     dismissDialog();
-                  }
+                  },
                 },
                 dismissAction: {
                   label: t("misc.close"),
                   color: Colors.textColorDefault,
                   link: true,
-                }
-              }
+                },
+              },
             );
           },
         );
@@ -272,7 +275,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
             await waitForCreatedSeedModalClose();
           }, 10);
         }
-
       } catch (e) {
         setLoading(false);
         return;
@@ -342,12 +344,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
                 />
               ))}
             </View>
-            if (!!importErrorMessage) {
-            <View row right gap-10 marginT-6>
-              <Text text80 color={Colors.current.danger?.background} center >
-                { importErrorMessage }
-              </Text>              
-            </View>
+            if (!!importErrorMessage){" "}
+            {
+              <View row right gap-10 marginT-6>
+                <Text text80 color={Colors.current.danger?.background} center>
+                  {importErrorMessage}
+                </Text>
+              </View>
             }
             <View row right gap-10 marginT-16>
               <Button
