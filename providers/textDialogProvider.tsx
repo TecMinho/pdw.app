@@ -115,9 +115,13 @@ export function TextDialogProvider({ children }: PropsWithChildren) {
    */
   const onDismiss = useCallback(() => {
     if (isLoading) return;
+    
+    setTimeout(() => {
+      dialogProperties.onDismiss?.();
+    }, 0);
+
     setText(null);
     setDialogProperties({});
-    dialogProperties.onDismiss?.();
   }, [dialogProperties, isLoading]);
 
   /**
