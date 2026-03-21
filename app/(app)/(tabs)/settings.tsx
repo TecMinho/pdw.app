@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import {useState } from "react";
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { scanMappings } from "@/helpers/scanMappings";
 import { EBSIVerifiableCredential } from "@/helpers/ebsi";
-import { Button, Colors, FloatingButton } from "react-native-ui-lib";
+import { Button, FloatingButton } from "react-native-ui-lib";
 import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
 import { useLocale } from "@/context/TranslationContext";
 import * as Clipboard from 'expo-clipboard';
@@ -295,7 +295,7 @@ export default function Home() {
           </Text>
         </View>
         <Text style={{ fontSize: 16, color: ThemeColors.current.text }}>
-          {currentLanguage === "pt" ? "🇵🇹 Português" : "🇬🇧 English"}
+          {currentLanguage === "pt" ? "[Português]" : "[English]"}
         </Text>
       </Pressable>
 

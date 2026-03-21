@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Modal, StyleSheet, TextInput } from "react-native";
+import { Modal, StyleSheet, TextInput, Alert } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
@@ -115,10 +115,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const copyCreatedSeedPhrase = useCallback(async () => {
     if (!createdSeedPhrase.trim()) return;
-    await Clipboard.setStringAsync(createdSeedPhrase);
-    enqueueDialog(t("misc.seed_phrase_copied"), {
-      title: t("misc.import_wallet"),
+
+    Clipboard.setStringAsync(createdSeedPhrase).then(() => {
+      Alert.alert(t("misc.seed_phrase_copied"));
     });
+
   }, [createdSeedPhrase, enqueueDialog, t]);
 
   const createNewWallet = useCallback(async (): Promise<EBSIDID> => {
@@ -271,7 +272,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           setTimeout(async () => {
             const newDid = await createNewWallet();
             setCreatedSeedPhrase((newDid.seed || "").trim());
-
+            
             await waitForCreatedSeedModalClose();
           }, 10);
         }
