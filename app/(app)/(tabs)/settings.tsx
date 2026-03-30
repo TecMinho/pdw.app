@@ -1,4 +1,4 @@
-import {useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TextInput,
   Image,
   Linking,
+  Alert,
 } from "react-native";
 import StorageHelper from "@/helpers/storage";
 import { useRouter } from "expo-router";
@@ -20,9 +21,10 @@ import { EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { Button, FloatingButton } from "react-native-ui-lib";
 import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
 import { useLocale } from "@/context/TranslationContext";
-import * as Clipboard from 'expo-clipboard';
+import * as Clipboard from "expo-clipboard";
 import DIDQRCode from "@/components/DIDQRCode";
-import {default as ThemeColors} from "@/constants/Colors";
+import { default as ThemeColors } from "@/constants/Colors";
+import PreAuthorizedCodeInput from "@/components/PreAuthorizedCode";
 
 /**
  * Settings Screen Component - Wallet Management Interface
@@ -40,7 +42,7 @@ export default function Home() {
   const [offerUrl, setOfferUrl] = useState("");
   const [code, setCode] = useState("");
   const [fetching, setFetching] = useState(false);
-  const [loading, setLoading] = useState(false);  
+  const [loading, setLoading] = useState(false);
   const [isViewDIDModalOpen, setViewDIDModalOpen] = useState(false);
   const [walletDID, setWalletDID] = useState(""); //useState(t("settings.no_did_found"));
 
@@ -49,7 +51,7 @@ export default function Home() {
    * Copy the DID string to the Clipboard to be used in other applications
    */
   const handleCopyDID = async () => {
-      await Clipboard.setStringAsync(walletDID);
+    await Clipboard.setStringAsync(walletDID);
   };
 
   /**
@@ -99,21 +101,25 @@ export default function Home() {
    * This operation cannot be undone
    */
   const handleDeleteAllCredentials = async () => {
-    enqueueDialog(t("settings.confirm_delete_credentials"), {
-      title: t("settings.delete_credentials"),
-      mainAction: {
-        label: t("settings.delete"),
-        backgroundColor: "red",
-        onPress: async () => {
-          await StorageHelper.saveCredentials([]);
-          mutate("credentials");
+    Alert.alert(
+      t("settings.delete_credentials"),
+      t("settings.confirm_delete_credentials"),
+      [
+        {
+          text: t("settings.cancel"),
+          style: "cancel",
         },
-      },
-      dismissAction: {
-        label: t("misc.close"),
-        color: ThemeColors.textColorDefault,
-      }
-    });
+        {
+          text: t("settings.delete"),
+          style: "destructive",
+          onPress: async () => {
+            await StorageHelper.saveCredentials([]);
+            await mutate("credentials");
+          },
+        },
+      ],
+      { cancelable: true },
+    );
   };
 
   /**
@@ -122,21 +128,25 @@ export default function Home() {
    * Logs the user out and requires re-authentication
    */
   const handleDeleteWallet = async () => {
-    enqueueDialog(t("settings.confirm_delete_wallet"), {
-      title: t("settings.delete_wallet"),
-      mainAction: {
-        label: t("settings.delete"),
-        backgroundColor: "red",
-        onPress: async () => {
-          await StorageHelper.deleteWallet();
-          setIsAuthenticated(false);
+    Alert.alert(
+      t("settings.delete_wallet"),
+      t("settings.confirm_delete_wallet"),
+      [
+        {
+          text: t("settings.cancel"),
+          style: "cancel",
         },
-      },
-      dismissAction: {
-        label: t("misc.close"),
-        color: ThemeColors.textColorDefault,
-      }
-    });
+        {
+          text: t("settings.delete"),
+          style: "destructive",
+          onPress: async () => {
+            await StorageHelper.deleteWallet();
+            setIsAuthenticated(false);
+          },
+        },
+      ],
+      { cancelable: true },
+    );
   };
 
   // Type definition for Ionicon names used in settings items
@@ -199,7 +209,13 @@ export default function Home() {
    * - Manual credential offer processing modal
    */
   return (
-    <View style={{ padding: 20, backgroundColor: ThemeColors.current.background, flex: 1 }}>
+    <View
+      style={{
+        padding: 20,
+        backgroundColor: ThemeColors.current.background,
+        flex: 1,
+      }}
+    >
       <Modal visible={!!data}>
         <CredentialExpandedInfo data={data} status={""} />
         <FloatingButton
@@ -233,10 +249,20 @@ export default function Home() {
         }}
       >
         <Pressable onPress={() => router.replace("/(app)/(tabs)")}>
-          <Ionicons name="chevron-back-outline" size={28} color={ThemeColors.current.text} />
+          <Ionicons
+            name="chevron-back-outline"
+            size={28}
+            color={ThemeColors.current.text}
+          />
         </Pressable>
         <Text
-          style={{ fontSize: 28, fontWeight: "bold", flex: 1, marginLeft: 3, color: ThemeColors.current.text }}
+          style={{
+            fontSize: 28,
+            fontWeight: "bold",
+            flex: 1,
+            marginLeft: 3,
+            color: ThemeColors.current.text,
+          }}
         >
           {t("settings.settings")}
         </Text>
@@ -253,7 +279,9 @@ export default function Home() {
               paddingVertical: 15,
               paddingHorizontal: 10,
               borderRadius: 8,
-              backgroundColor: pressed ? ThemeColors.current.tint : "transparent",
+              backgroundColor: pressed
+                ? ThemeColors.current.tint
+                : "transparent",
             },
           ]}
         >
@@ -263,7 +291,12 @@ export default function Home() {
             color={danger ? "#d9534f" : ThemeColors.current.text}
             style={{ marginRight: 12 }}
           />
-          <Text style={{ fontSize: 16, color: danger ? "#d9534f" : ThemeColors.current.text }}>
+          <Text
+            style={{
+              fontSize: 16,
+              color: danger ? "#d9534f" : ThemeColors.current.text,
+            }}
+          >
             {label}
           </Text>
         </Pressable>
@@ -405,19 +438,11 @@ export default function Home() {
             >
               {t("settings.enter_pre_approved_code")}
             </Text>
-            <TextInput
-              placeholder="1234"
+            <PreAuthorizedCodeInput
               value={code}
               onChangeText={setCode}
-              keyboardType="numeric"
-              style={{
-                height: 40,
-                borderWidth: 1,
-                borderColor: "#ccc",
-                paddingHorizontal: 10,
-                borderRadius: 5,
-                marginBottom: 20,
-              }}
+              maxLength={8}
+              placeholder="1234"
             />
             <View style={{ gap: 10 }}>
               <Button
@@ -511,7 +536,6 @@ export default function Home() {
         </View>
       </Modal>
 
-
       <Modal
         visible={isViewDIDModalOpen}
         animationType="fade"
@@ -531,7 +555,6 @@ export default function Home() {
             backgroundColor: "rgba(0,0,0,0.5)",
           }}
         >
-    
           <View
             style={{ backgroundColor: "white", padding: 20, borderRadius: 10 }}
           >
@@ -540,12 +563,8 @@ export default function Home() {
             >
               {t("settings.your_did")}
             </Text>
-            <Text
-              style={{ marginBottom: 10, fontSize: 12 }}
-            >
-              {walletDID}
-            </Text>
-            <View style={{ alignItems: "center", marginBottom: 20}}>
+            <Text style={{ marginBottom: 10, fontSize: 12 }}>{walletDID}</Text>
+            <View style={{ alignItems: "center", marginBottom: 20 }}>
               <DIDQRCode value={walletDID} size={250} />
             </View>
             <View style={{ gap: 10 }}>
@@ -555,7 +574,9 @@ export default function Home() {
                   handleCopyDID();
                   setViewDIDModalOpen(false);
                 }}
-                disabled={walletDID === "" || walletDID === t("settings.no_did_found")}
+                disabled={
+                  walletDID === "" || walletDID === t("settings.no_did_found")
+                }
               />
 
               <Button
