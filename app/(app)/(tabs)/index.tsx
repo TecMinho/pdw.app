@@ -23,6 +23,7 @@ import { EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { useLocale } from "@/context/TranslationContext";
 import NoCredentialsView from "@/components/NoCredentialsView";
 import Colors from "@/constants/Colors";
+import PreAuthorizedCodeInput from "@/components/PreAuthorizedCode";
 
 /**
  * Interface defining the props for the CredentialCard component
@@ -68,7 +69,9 @@ export const CredentialCard: React.FC<CredentialCardProps> = ({
 }) => {
   const isRevoked = status === "revoked";
   const isExpired = status === "expired";
-  const cardColor = isRevoked ? Colors.current.danger?.lighterBackground : Colors.current.success?.lighterBackground;
+  const cardColor = isRevoked
+    ? Colors.current.danger?.lighterBackground
+    : Colors.current.success?.lighterBackground;
   return (
     <Pressable onPress={onPress} style={{ padding: 5 }}>
       <ImageBackground
@@ -485,7 +488,13 @@ export default function Home() {
    */
   return (
     <>
-      <View style={{ padding: 20, backgroundColor: Colors.current.background, flex: 1 }}>
+      <View
+        style={{
+          padding: 20,
+          backgroundColor: Colors.current.background,
+          flex: 1,
+        }}
+      >
         <Modal visible={!!data}>
           <CredentialExpandedInfo data={data} status={""} />
           <FloatingButton
@@ -516,7 +525,14 @@ export default function Home() {
             marginBottom: 25,
           }}
         >
-          <Text style={{ fontSize: 28, fontWeight: "bold", flex: 1, color: Colors.current.text }}>
+          <Text
+            style={{
+              fontSize: 28,
+              fontWeight: "bold",
+              flex: 1,
+              color: Colors.current.text,
+            }}
+          >
             {t("main.credentials")}
           </Text>
 
@@ -561,10 +577,19 @@ export default function Home() {
               alignItems: "center",
             }}
           >
-            <SimpleLineIcon name="magnifier" size={16} color={Colors.current.textMuted} />
+            <SimpleLineIcon
+              name="magnifier"
+              size={16}
+              color={Colors.current.textMuted}
+            />
             <TextInput
-              style={{ flex: 1, height: 40, marginLeft: 8, color: Colors.light.text }}              
-              placeholderTextColor={Colors.current.textMuted} 
+              style={{
+                flex: 1,
+                height: 40,
+                marginLeft: 8,
+                color: Colors.light.text,
+              }}
+              placeholderTextColor={Colors.current.textMuted}
               placeholder={t("main.search")}
               onChangeText={setSearch}
               value={search}
@@ -573,7 +598,11 @@ export default function Home() {
               onPress={() => setIsSheetOpen(true)}
               style={{ marginLeft: 10 }}
             >
-              <SimpleLineIcon name="options-vertical" size={20} color={Colors.current.textMuted} />
+              <SimpleLineIcon
+                name="options-vertical"
+                size={20}
+                color={Colors.current.textMuted}
+              />
             </Pressable>
           </View>
         </>
@@ -668,19 +697,11 @@ export default function Home() {
             >
               {t("main.enter_pre_approved_code")}
             </Text>
-            <TextInput
-              placeholder="1234"
+            <PreAuthorizedCodeInput
               value={code}
               onChangeText={setCode}
-              keyboardType="numeric"
-              style={{
-                height: 40,
-                borderWidth: 1,
-                borderColor: "#ccc",
-                paddingHorizontal: 10,
-                borderRadius: 5,
-                marginBottom: 20,
-              }}
+              maxLength={8}
+              placeholder="1234"
             />
             <View style={{ gap: 10 }}>
               <Button

@@ -24,6 +24,7 @@ import { useLocale } from "@/context/TranslationContext";
 import * as Clipboard from "expo-clipboard";
 import DIDQRCode from "@/components/DIDQRCode";
 import { default as ThemeColors } from "@/constants/Colors";
+import PreAuthorizedCodeInput from "@/components/PreAuthorizedCode";
 
 /**
  * Settings Screen Component - Wallet Management Interface
@@ -437,19 +438,11 @@ export default function Home() {
             >
               {t("settings.enter_pre_approved_code")}
             </Text>
-            <TextInput
-              placeholder="1234"
+            <PreAuthorizedCodeInput
               value={code}
               onChangeText={setCode}
-              keyboardType="numeric"
-              style={{
-                height: 40,
-                borderWidth: 1,
-                borderColor: "#ccc",
-                paddingHorizontal: 10,
-                borderRadius: 5,
-                marginBottom: 20,
-              }}
+              maxLength={8}
+              placeholder="1234"
             />
             <View style={{ gap: 10 }}>
               <Button

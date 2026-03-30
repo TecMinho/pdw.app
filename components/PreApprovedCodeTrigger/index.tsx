@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Modal, StyleSheet, TextInput } from "react-native";
+import { Modal, StyleSheet } from "react-native";
 import { Button, Text, View } from "react-native-ui-lib";
 import { useLocale } from "@/context/TranslationContext";
+import PreAuthorizedCodeInput from "../PreAuthorizedCode";
 
 /**
  * Props interface for the PreApprovedCodeTrigger component
@@ -54,12 +55,11 @@ const PreApprovedCodeTrigger: React.FC<PreApprovedCodeTriggerProps> = ({
           <Text text70 marginB-10 center>
             {t("credentials.enter_pre_approved_code")}
           </Text>
-          <TextInput
-            placeholder="1234"
+          <PreAuthorizedCodeInput
             value={code}
             onChangeText={setCode}
-            keyboardType="numeric"
-            style={styles.input}
+            maxLength={8}
+            placeholder="1234"
           />
           <View row center marginT-10>
             <Button
