@@ -50,6 +50,7 @@ export default function Scanner() {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: t("scanner.credential_reader"),
+      headerTitleAlign: "center",
       headerLeft: () => (
         <Ionicons
           name="chevron-back-outline"
@@ -67,14 +68,18 @@ export default function Scanner() {
       ),
       headerStyle: {
         backgroundColor: ThemeColors.current.background,
+        borderBottomWidth: 0,
+        elevation: 0,
+        shadowOpacity: 0,
       },
       headerTitleStyle: {
-        fontSize: 28, 
-        fontWeight: "bold", 
-        color: ThemeColors.current.text,
+        fontSize: 20,
+        fontWeight: "600",
+        letterSpacing: 0.3,
+        color: "#F8FAFC",
       },
     });
-  }, [navigation, loading]);
+  }, [navigation, loading, t]);
 
   /**
    * Request camera permissions when the screen comes into focus
@@ -381,7 +386,7 @@ export default function Scanner() {
           backgroundColor={"rgba(126,124,124,0.75)"}
         />
       )}
-      <QrScannerLayout />
+      <QrScannerLayout scanning={scanned || loading} />
       {isFocused && (
         <CameraView
           onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
@@ -391,6 +396,28 @@ export default function Scanner() {
           style={{ flex: 1 }}
         />
       )}
+      <View style={styles.feedbackWrap} pointerEvents="none">
+        <Text style={styles.feedbackText}>
+          {loading
+            ? t("scanner.loading")
+            : scanned
+              ? t("scanner.scan_feedback_detected_processing")
+              : t("scanner.scan_feedback_place_in_frame")}
+        </Text>
+        <View style={styles.feedbackStatusRow}>
+          <View
+            style={[
+              styles.feedbackDot,
+              loading || scanned ? styles.feedbackDotActive : undefined,
+            ]}
+          />
+          <Text style={styles.feedbackStatusText}>
+            {loading || scanned
+              ? t("scanner.scan_status_in_progress")
+              : t("scanner.scan_status_waiting")}
+          </Text>
+        </View>
+      </View>
       {showCredentialSelector && (
         <CredentialSelectorTrigger
           onSelect={async (_) => {
@@ -542,6 +569,49 @@ const styles = StyleSheet.create({
     backgroundColor: ThemeColors.current.background,
     flex: 1,
     flexDirection: "column",
+  },
+  feedbackWrap: {
+    position: "absolute",
+    left: 20,
+    right: 20,
+    bottom: 122,
+    zIndex: 3,
+    alignItems: "center",
+  },
+  feedbackText: {
+    fontSize: 14,
+    color: "#E5E7EB",
+    textAlign: "center",
+    fontWeight: "500",
+    textShadowColor: "rgba(0,0,0,0.6)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  feedbackStatusRow: {
+    marginTop: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: "rgba(11,13,16,0.72)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  feedbackDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: "#6B7280",
+  },
+  feedbackDotActive: {
+    backgroundColor: "#00E676",
+  },
+  feedbackStatusText: {
+    fontSize: 12,
+    color: "#D1D5DB",
+    fontWeight: "600",
   },
   title: {
       fontSize: 24,
