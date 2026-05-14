@@ -1,10 +1,8 @@
 import { Text, View } from "react-native-ui-lib";
 import React, { useEffect, useState } from "react";
 import {
-  FlatList,
+  ScrollView,
   StyleSheet,
-  Pressable,
-  ImageBackground,
   Image,
 } from "react-native";
 import _ from "lodash";
@@ -12,7 +10,7 @@ import { useLocalSearchParams } from "expo-router";
 import StorageHelper from "@/helpers/storage";
 import { EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { useLocale } from "@/context/TranslationContext";
-import Colors from "@/constants/Colors";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 /**
  * Props interface for the CredentialExpandedInfo component
@@ -131,228 +129,312 @@ export default function CredentialExpandedInfo({
     })
     .filter((item) => !["logo", "name", "backgroundImage"].includes(item.key));
 
+  const grouped = _.groupBy(filteredData, (item) => item.key.split(".")[0]);
+  const issuerItems = grouped.issuer || grouped.credentialIssuer || [];
+  const subjectItems = grouped.credentialSubject || [];
+  const otherSections = Object.entries(grouped).filter(
+    ([section]) =>
+      ![
+        "issuer",
+        "credentialIssuer",
+        "credentialSubject",
+        "issuanceDate",
+        "issued",
+        "validUntil",
+        "expirationDate",
+        "validFrom",
+      ].includes(section),
+  );
+
+  const issuedValue =
+    credential.issuanceDate || credential.validFrom || "N/A";
+  const expiresValue = credential.validUntil || credential.expirationDate || "N/A";
+  const formatMaybeDate = (value: string) => {
+    if (!value || value === "N/A") return "N/A";
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString();
+  };
+  const titleText = Array.isArray(credential.type)
+    ? credential.type[credential.type.length - 1]
+    : _.startCase(credential.type || t("credentials.verifiable_credential"));
+  const subtitleText =
+    credential.name || t("credentials.verifiable_credential");
+  const statusText = isRevoked
+    ? t("credentials.revoked")
+    : isExpired
+      ? t("credentials.expired")
+      : t("credentials.valid");
+  const statusColor = isRevoked ? "#EF4444" : isExpired ? "#F59E0B" : "#00E676";
+
   return (
-    <>
-      {!credential.logo ? (
-        <ImageBackground
-          source={require("@/assets/images/carteira.png")}
-          style={styles.imageBackground}
-          resizeMode="contain"
-        >
-          <View style={styles.titleContainer}>
-            <Text style={styles.titleText}>
-              {Array.isArray(credential.type)
-                ? credential.type[credential.type.length - 1]
-                : _.startCase(
-                    credential.type || t("credentials.verifiable_credential"),
-                  )}
-            </Text>
-            <Text
-              style={[
-                styles.statusText,
-                {
-                  color: isRevoked
-                    ? "black"
-                    : isExpired
-                      ? "#DAA520"
-                      : "#388E3C",
-                },
-              ]}
-            >
-              {isRevoked
-                ? `❌ ${t("credentials.revoked")}`
-                : isExpired
-                  ? `⏳ ${t("credentials.expired")}`
-                  : `✔ ${t("credentials.valid")}`}
+    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <View style={styles.heroCard}>
+        <View style={styles.heroGlow} />
+        <View style={styles.heroHeader}>
+          <View style={styles.heroIconBox}>
+            {credential.logo ? (
+              <Image
+                source={{ uri: credential.logo }}
+                style={styles.heroLogo}
+                resizeMode="contain"
+              />
+            ) : (
+              <Ionicons name="school-outline" size={26} color="#3B82F6" />
+            )}
+          </View>
+          <View style={[styles.statusPill, { borderColor: `${statusColor}55` }]}>
+            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+            <Text style={[styles.statusText, { color: statusColor }]}>
+              {statusText.toUpperCase()}
             </Text>
           </View>
-        </ImageBackground>
-      ) : (
-        <View style={{ alignItems: "center" }}>
-          <Image
-            source={{ uri: credential.logo }}
-            style={{ width: 300, height: 100 }}
-            resizeMode="contain"
-          />
-          <Text style={styles.titleText}>
-            {Array.isArray(credential.type)
-              ? credential.type[credential.type.length - 1]
-              : _.startCase(
-                  credential.type || t("credentials.verifiable_credential"),
-                )}
-          </Text>
-          {credential.name && (
-            <Text style={styles.subtitleText}>{credential.name}</Text>
-          )}
-          <Text
-            style={[
-              styles.statusText,
-              {
-                color: isRevoked ? "black" : isExpired ? "#DAA520" : "#388E3C",
-              },
-            ]}
-          >
-            {isRevoked
-              ? `❌ ${t("credentials.revoked")}`
-              : isExpired
-                ? `⏳ ${t("credentials.expired")}`
-                : `✔ ${t("credentials.valid")}`}
-          </Text>
+        </View>
+
+        <Text style={styles.heroTitle} numberOfLines={2}>
+          {titleText}
+        </Text>
+        <Text style={styles.heroSubtitle}>{subtitleText}</Text>
+
+        <View style={styles.heroMeta}>
+          <View>
+            <Text style={styles.metaLabel}>{t("credentials.issue").toUpperCase()}</Text>
+            <Text style={styles.metaValue}>{formatMaybeDate(issuedValue)}</Text>
+          </View>
+          <View style={styles.metaDivider} />
+          <View>
+            <Text style={styles.metaLabel}>{t("credentials.exp").toUpperCase()}</Text>
+            <Text style={styles.metaValue}>{formatMaybeDate(expiresValue)}</Text>
+          </View>
+        </View>
+      </View>
+
+      {issuerItems.length > 0 && (
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionTitle}>ISSUER</Text>
+          <View style={styles.sectionPanel}>
+            {issuerItems.map((item, idx) => (
+              <View
+                key={item.key}
+                style={[styles.fieldRow, idx < issuerItems.length - 1 && styles.fieldBorder]}
+              >
+                <Text style={styles.fieldLabel}>
+                  {_.startCase(item.key.split(".").slice(-1).join(""))}
+                </Text>
+                <Text
+                  style={[
+                    styles.fieldValue,
+                    item.displayValue.length > 42 && styles.fieldValueCompact,
+                  ]}
+                  numberOfLines={2}
+                >
+                  {item.displayValue}
+                </Text>
+              </View>
+            ))}
+          </View>
         </View>
       )}
-      <View style={styles.detailsContainer}>
-        <FlatList
-          data={Object.entries(
-            _.groupBy(filteredData, (item) => item.key.split(".")[0]),
-          )}
-          keyExtractor={([section]) => section}
-          renderItem={({ item: [section, items] }) => {
-            /**
-             * Subsection Grouping Logic
-             *
-             * Further groups items within each section by their subsection path.
-             * This creates a hierarchical structure where:
-             * - Section: Top-level object (e.g., "credentialSubject")
-             * - Subsection: Intermediate path (e.g., "address", "education")
-             * - Fields: Individual properties within subsections
-             */
-            const groupedBySubsection = _.groupBy(items, (item) => {
-              const parts = item.key.split(".");
-              return parts.length > 2 ? parts.slice(1, -1).join(".") : "";
-            });
 
-            return (
-              <View style={{ alignSelf: "stretch" }}>
-                {items.length > 1 && (
-                  <Text style={styles.sectionHeader}>
-                    {_.startCase(section)}
-                  </Text>
-                )}
-                {Object.entries(groupedBySubsection).map(
-                  ([subsection, group]) => (
-                    <View key={subsection}>
-                      {subsection !== "" && (
-                        <Text style={styles.subsectionLabel}>
-                          {_.startCase(subsection.replace(/\./g, " > "))}
-                        </Text>
-                      )}
-                      {group.map((item, index) => {
-                        const keyParts = item.key.split(".");
-                        const fieldName = _.startCase(
-                          keyParts.slice(-1).join(""),
-                        );
-
-                        return (
-                          <View
-                            key={item.key + index}
-                            style={[styles.detailCard]}
-                          >
-                            <Text style={[styles.labelBold]}>{fieldName}</Text>
-                            <Text style={[styles.value]}>
-                              {item.displayValue}
-                            </Text>
-                          </View>
-                        );
-                      })}
-                    </View>
-                  ),
-                )}
+      {subjectItems.length > 0 && (
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionTitle}>CREDENTIAL SUBJECT</Text>
+          <View style={styles.sectionPanel}>
+            {subjectItems.map((item, idx) => (
+              <View
+                key={item.key}
+                style={[styles.fieldRow, idx < subjectItems.length - 1 && styles.fieldBorder]}
+              >
+                <Text style={styles.fieldLabel}>
+                  {_.startCase(item.key.split(".").slice(-1).join(""))}
+                </Text>
+                <Text
+                  style={[
+                    styles.fieldValue,
+                    item.displayValue.length > 42 && styles.fieldValueCompact,
+                  ]}
+                  numberOfLines={2}
+                >
+                  {item.displayValue}
+                </Text>
               </View>
-            );
-          }}
-        />
-      </View>
-    </>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {otherSections.map(([section, items]) => (
+        <View style={styles.sectionWrap} key={section}>
+          <Text style={styles.sectionTitle}>{_.startCase(section)}</Text>
+          <View style={styles.sectionPanel}>
+            {items.map((item, idx) => (
+              <View
+                key={item.key}
+                style={[styles.fieldRow, idx < items.length - 1 && styles.fieldBorder]}
+              >
+                <Text style={styles.fieldLabel}>
+                  {_.startCase(item.key.split(".").slice(-1).join(""))}
+                </Text>
+                <Text
+                  style={[
+                    styles.fieldValue,
+                    item.displayValue.length > 42 && styles.fieldValueCompact,
+                  ]}
+                  numberOfLines={2}
+                >
+                  {item.displayValue}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
-/**
- * StyleSheet for CredentialExpandedInfo component
- *
- * Implements a comprehensive styling system for credential display:
- * - Wallet-style card presentation with background image overlay
- * - Hierarchical typography for sections, subsections, and fields
- * - Card-based layout for individual credential fields
- * - Responsive design with consistent spacing and alignment
- * - Status-aware color coding and visual indicators
- *
- * Design Principles:
- * - Visual hierarchy through typography and spacing
- * - Accessibility through sufficient contrast and touch targets
- * - Consistency across different credential types and content
- * - Professional appearance suitable for official documents
- */
 const styles = StyleSheet.create({
-  titleText: {
-    fontSize: 15.5,
-    fontWeight: "bold",
+  content: {
+    paddingHorizontal: 16,
+    paddingBottom: 42,
+    gap: 18,
   },
-  subtitleText: {
-    fontSize: 12.5,
+  heroCard: {
+    marginTop: 8,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "rgba(59,130,246,0.35)",
+    backgroundColor: "#0B0D10",
+    overflow: "hidden",
+    padding: 18,
   },
-  imageBackground: {
-    width: 364,
-    height: 210,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 20,
-    alignSelf: "center",
-  },
-  titleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  heroGlow: {
     position: "absolute",
-    top: 50,
-    left: 50,
-    right: 50,
+    top: -84,
+    right: -58,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: "rgba(59,130,246,0.14)",
+  },
+  heroHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 14,
+  },
+  heroIconBox: {
+    width: 86,
+    height: 86,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "rgba(59,130,246,0.55)",
+    backgroundColor: "rgba(59,130,246,0.14)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  heroLogo: {
+    width: 54,
+    height: 54,
+  },
+  statusPill: {
+    minHeight: 40,
+    borderRadius: 999,
+    borderWidth: 1,
+    backgroundColor: "rgba(0,230,118,0.12)",
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
   },
   statusText: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.8,
   },
-  detailsContainer: {
-    flex: 1,
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 10,
+  heroTitle: {
+    fontSize: 42,
+    lineHeight: 46,
+    fontWeight: "700",
+    color: "#F8FAFC",
+    letterSpacing: -0.3,
+    marginBottom: 4,
   },
-  sectionHeader: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginTop: 5,
-    marginBottom: 10,
-    color: Colors.current.title,
-    alignSelf: "center",
-    textAlign: "center",
-  },
-  subsectionLabel: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#555",
-    marginBottom: 5,
-    textAlign: "center",
-  },
-  detailCard: {
-    backgroundColor: "#EDEDED",
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    width: 250,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 60,
-    marginBottom: 15,
-  },
-  labelBold: {
-    fontSize: 16,
-    fontWeight: "900",
-    color: "#000",
-  },
-  value: {
+  heroSubtitle: {
     fontSize: 13,
-    color: "#000",
-    marginTop: 5,
-    textAlign: "center",
+    color: "#A1A1AA",
+    marginBottom: 16,
+  },
+  heroMeta: {
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.10)",
+    paddingTop: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  metaLabel: {
+    fontSize: 10,
+    color: "#71717A",
+    fontWeight: "700",
+    letterSpacing: 2.2,
+  },
+  metaValue: {
+    marginTop: 2,
+    fontSize: 15,
+    color: "#F8FAFC",
+    fontWeight: "700",
+  },
+  metaDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: "rgba(255,255,255,0.14)",
+  },
+  sectionWrap: {
+    gap: 8,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    color: "#71717A",
+    fontWeight: "700",
+    letterSpacing: 3,
+    marginLeft: 4,
+  },
+  sectionPanel: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    backgroundColor: "#101418",
+    overflow: "hidden",
+  },
+  fieldRow: {
+    minHeight: 80,
+    justifyContent: "center",
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+  },
+  fieldBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.08)",
+  },
+  fieldLabel: {
+    fontSize: 11,
+    color: "#71717A",
+    fontWeight: "700",
+    letterSpacing: 2.6,
+    marginBottom: 6,
+  },
+  fieldValue: {
+    fontSize: 17,
+    color: "#F8FAFC",
+    fontWeight: "700",
+  },
+  fieldValueCompact: {
+    fontSize: 15,
+    lineHeight: 20,
   },
 });
