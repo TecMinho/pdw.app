@@ -8,6 +8,9 @@ import {
   Image,
   Linking,
   Alert,
+  ScrollView,
+  SafeAreaView,
+  StyleSheet,
 } from "react-native";
 import StorageHelper from "@/helpers/storage";
 import { useRouter } from "expo-router";
@@ -198,6 +201,12 @@ export default function Home() {
     },
   ];
 
+  const identityRows: typeof settingsItems = [
+    settingsItems[0],
+    settingsItems[1],
+  ];
+  const dangerRows: typeof settingsItems = [settingsItems[2], settingsItems[3]];
+
   /**
    * Main Render Method - Settings Interface
    *
@@ -209,13 +218,7 @@ export default function Home() {
    * - Manual credential offer processing modal
    */
   return (
-    <View
-      style={{
-        padding: 20,
-        backgroundColor: ThemeColors.current.background,
-        flex: 1,
-      }}
-    >
+    <>
       <Modal visible={!!data}>
         <CredentialExpandedInfo data={data} status={""} />
         <FloatingButton
@@ -236,165 +239,112 @@ export default function Home() {
             backgroundColor: "#E6E6E6",
             label: t("settings.reject"),
           }}
-        />
-      </Modal>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: 30,
-          marginBottom: 25,
-          backgroundColor: ThemeColors.current.background,
-        }}
-      >
-        <Pressable onPress={() => router.replace("/(app)/(tabs)")}>
-          <Ionicons
-            name="chevron-back-outline"
-            size={28}
-            color={ThemeColors.current.text}
           />
-        </Pressable>
-        <Text
-          style={{
-            fontSize: 28,
-            fontWeight: "bold",
-            flex: 1,
-            marginLeft: 3,
-            color: ThemeColors.current.text,
-          }}
-        >
-          {t("settings.settings")}
-        </Text>
-      </View>
+        </Modal>
+      <SafeAreaView style={styles.safe}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.headerRow}>
+            <Pressable
+              onPress={() => router.replace("/(app)/(tabs)")}
+              style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
+            >
+              <Ionicons name="chevron-back-outline" size={22} color="#F8FAFC" />
+            </Pressable>
+            <View style={styles.headerTextWrap}>
+              <Text style={styles.headerTitle}>{t("settings.settings")}</Text>
+            </View>
+          </View>
 
-      {settingsItems.map(({ label, onPress, icon, danger }, idx) => (
-        <Pressable
-          key={label}
-          onPress={onPress}
-          style={({ pressed }) => [
-            {
-              flexDirection: "row",
-              alignItems: "center",
-              paddingVertical: 15,
-              paddingHorizontal: 10,
-              borderRadius: 8,
-              backgroundColor: pressed
-                ? ThemeColors.current.tint
-                : "transparent",
-            },
-          ]}
-        >
-          <Ionicons
-            name={icon}
-            size={22}
-            color={danger ? "#d9534f" : ThemeColors.current.text}
-            style={{ marginRight: 12 }}
-          />
-          <Text
-            style={{
-              fontSize: 16,
-              color: danger ? "#d9534f" : ThemeColors.current.text,
-            }}
-          >
-            {label}
-          </Text>
-        </Pressable>
-      ))}
+          <View style={styles.section}>
+            {identityRows.map(({ label, onPress, icon }) => (
+              <Pressable
+                key={label}
+                onPress={onPress}
+                style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+              >
+                <View style={styles.rowIconBox}>
+                  <Ionicons name={icon} size={18} color="#00E676" />
+                </View>
+                <Text style={styles.rowLabel}>{label}</Text>
+                <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+              </Pressable>
+            ))}
 
-      <Pressable
-        onPress={() => changeLanguage(currentLanguage === "pt" ? "en" : "pt")}
-        style={({ pressed }) => [
-          {
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingVertical: 15,
-            paddingHorizontal: 10,
-            borderRadius: 8,
-            backgroundColor: pressed ? ThemeColors.current.tint : "transparent",
-          },
-        ]}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Ionicons
-            name="globe-outline"
-            size={22}
-            color={ThemeColors.current.text}
-            style={{ marginRight: 12 }}
-          />
-          <Text style={{ fontSize: 16, color: ThemeColors.current.text }}>
-            {t("settings.language")}
-          </Text>
-        </View>
-        <Text style={{ fontSize: 16, color: ThemeColors.current.text }}>
-          {currentLanguage === "pt" ? "[Português]" : "[English]"}
-        </Text>
-      </Pressable>
+            <Pressable
+              onPress={() =>
+                changeLanguage(currentLanguage === "pt" ? "en" : "pt")
+              }
+              style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+            >
+              <View style={styles.rowIconBox}>
+                <Ionicons name="globe-outline" size={18} color="#00E676" />
+              </View>
+              <Text style={styles.rowLabel}>{t("settings.language")}</Text>
+              <Text style={styles.rowMeta}>
+                {currentLanguage === "pt"
+                  ? t("settings.language_pt")
+                  : t("settings.language_en")}
+              </Text>
+            </Pressable>
 
-      <Pressable
-        key={t("settings.about")}
-        onPress={() => router.navigate("/about")}
-        style={({ pressed }) => [
-          {
-            flexDirection: "row",
-            alignItems: "center",
-            paddingVertical: 15,
-            paddingHorizontal: 10,
-            borderRadius: 8,
-            backgroundColor: pressed ? "#e0e0e0" : "transparent",
-          },
-        ]}
-      >
-        <Ionicons
-          name={"information-circle-outline"}
-          size={22}
-          color={ThemeColors.current.text}
-          style={{ marginRight: 12 }}
-        />
-        <Text style={{ fontSize: 16, color: ThemeColors.current.text }}>
-          {t("settings.about")}
-        </Text>
-      </Pressable>
+            <Pressable
+              onPress={() => router.navigate("/about")}
+              style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+            >
+              <View style={styles.rowIconBox}>
+                <Ionicons name="information-circle-outline" size={18} color="#00E676" />
+              </View>
+              <Text style={styles.rowLabel}>{t("settings.about")}</Text>
+              <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+            </Pressable>
+          </View>
 
-      <View
-        style={{
-          position: "absolute",
-          bottom: 40,
-          left: 40,
-          right: 40,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Pressable
-          onPress={() =>
-            Linking.openURL(
-              "https://ec.europa.eu/digital-building-blocks/sites/display/EBSI",
-            )
-          }
-          style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
-        >
-          <Image
-            source={require("@/assets/images/logos/ebsi.png")}
-            tintColor={ThemeColors.current.image.getTintColor()}
-            style={{ width: 120, height: 120, resizeMode: "contain" }}
-            alt="Logo EBSI"
-          />
-        </Pressable>
-        <Pressable
-          onPress={() => Linking.openURL("https://www.tecminho.uminho.pt")}
-          style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
-        >
-          <Image
-            source={require("@/assets/images/logos/tecminho.png")}
-            tintColor={ThemeColors.current.image.getTintColor()}
-            style={{ width: 120, height: 120, resizeMode: "contain" }}
-            alt="Logo TecMinho"
-          />
-        </Pressable>
-      </View>
+          <View style={styles.section}>
+            {dangerRows.map(({ label, onPress, icon }) => (
+              <Pressable
+                key={label}
+                onPress={onPress}
+                style={({ pressed }) => [styles.dangerRow, pressed && styles.dangerRowPressed]}
+              >
+                <View style={styles.dangerIconBox}>
+                  <Ionicons name={icon} size={18} color="#EF4444" />
+                </View>
+                <Text style={styles.dangerLabel}>{label}</Text>
+                <Ionicons name="chevron-forward" size={16} color="#7F1D1D" />
+              </Pressable>
+            ))}
+          </View>
+
+          <View style={styles.footerLogos}>
+            <Pressable
+              onPress={() =>
+                Linking.openURL(
+                  "https://ec.europa.eu/digital-building-blocks/sites/display/EBSI",
+                )
+              }
+              style={({ pressed }) => [styles.logoBtn, pressed && styles.pressed]}
+            >
+              <Image
+                source={require("@/assets/images/logos/ebsi.png")}
+                tintColor={ThemeColors.current.image.getTintColor()}
+                style={styles.logo}
+                alt="Logo EBSI"
+              />
+            </Pressable>
+            <Pressable
+              onPress={() => Linking.openURL("https://www.tecminho.uminho.pt")}
+              style={({ pressed }) => [styles.logoBtn, pressed && styles.pressed]}
+            >
+              <Image
+                source={require("@/assets/images/logos/tecminho.png")}
+                tintColor={ThemeColors.current.image.getTintColor()}
+                style={styles.logo}
+                alt="Logo TecMinho"
+              />
+            </Pressable>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
 
       <Modal
         visible={isOfferModalOpen}
@@ -512,7 +462,7 @@ export default function Home() {
                       error?.message ??
                         t("settings.failed_to_fetch_or_parse_offer"),
                       {
-                        title: "Error",
+                        title: t("settings.error_title"),
                       },
                     );
                   } finally {
@@ -590,6 +540,130 @@ export default function Home() {
           </View>
         </View>
       </Modal>
-    </View>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: "#06080C",
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 48,
+    gap: 22,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  backBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.14)",
+    backgroundColor: "#101418",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pressed: {
+    opacity: 0.75,
+  },
+  headerTextWrap: {
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: 30,
+    fontWeight: "700",
+    color: "#F8FAFC",
+    letterSpacing: -0.2,
+  },
+  section: {
+    gap: 10,
+  },
+  row: {
+    minHeight: 62,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    backgroundColor: "#101418",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    gap: 12,
+  },
+  rowPressed: {
+    backgroundColor: "#151A20",
+  },
+  rowIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: "rgba(0,230,118,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(0,230,118,0.24)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rowLabel: {
+    flex: 1,
+    fontSize: 15,
+    color: "#F3F4F6",
+    fontWeight: "600",
+  },
+  rowMeta: {
+    fontSize: 13,
+    color: "#9CA3AF",
+    fontWeight: "600",
+  },
+  dangerRow: {
+    minHeight: 62,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(239,68,68,0.35)",
+    backgroundColor: "rgba(127,29,29,0.22)",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    gap: 12,
+  },
+  dangerRowPressed: {
+    backgroundColor: "rgba(127,29,29,0.32)",
+  },
+  dangerIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: "rgba(239,68,68,0.18)",
+    borderWidth: 1,
+    borderColor: "rgba(239,68,68,0.35)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dangerLabel: {
+    flex: 1,
+    fontSize: 15,
+    color: "#FCA5A5",
+    fontWeight: "600",
+  },
+  footerLogos: {
+    marginTop: 6,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 10,
+  },
+  logoBtn: {
+    paddingHorizontal: 10,
+  },
+  logo: {
+    width: 98,
+    height: 56,
+    resizeMode: "contain",
+    opacity: 0.92,
+  },
+});

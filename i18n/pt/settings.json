@@ -21,5 +21,11 @@
   "no_credential_found": "Nenhuma credencial encontrada",
   "failed_to_fetch_or_parse_offer": "Falha ao carregar ou ao analisar a oferta",
   "cancel": "Cancelar",
-  "language": "Idioma"
+  "language": "Idioma",
+  "subtitle": "Gerir preferências da carteira e controlos de identidade",
+  "identity_section": "IDENTIDADE",
+  "danger_section": "ZONA DE RISCO",
+  "language_pt": "Português",
+  "language_en": "Inglês",
+  "error_title": "Erro"
 }
