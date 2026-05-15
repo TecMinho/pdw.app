@@ -8,10 +8,10 @@ import React, {
 import {
   Button,
   ButtonProps,
-  Colors,
   Constants,
   Dialog,
   DialogProps,
+  TouchableOpacity,
   Text,
   View,
 } from "react-native-ui-lib";
@@ -30,6 +30,8 @@ interface TextDialogProperties extends Omit<DialogProps, "visible"> {
   dismissAction?: ButtonProps;
   secondaryAction?: ButtonProps;
   mainAction?: ButtonProps;
+  hideDefaultDismissAction?: boolean;
+  showTopClose?: boolean;
 }
 
 /**
@@ -151,36 +153,60 @@ export function TextDialogProvider({ children }: PropsWithChildren) {
           dialogProperties.onDismiss?.();
         }}
       >
-        <View>
+        <View style={styles.dialogBody}>
           {dialogProperties.title && (
-            <View margin-20 center>
-              <Text text50 center>
-                {dialogProperties.title}
-              </Text>
+            <View style={styles.titleRow}>
+              <Text style={styles.titleText}>{dialogProperties.title}</Text>
+              {dialogProperties.showTopClose && (
+                <TouchableOpacity
+                  style={styles.topCloseBtn}
+                  onPress={onDismiss}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.topCloseText}>✕</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
-          <View margin-20 center>
+          {!dialogProperties.title && dialogProperties.showTopClose && (
+            <View style={styles.titleRow}>
+              <View />
+              <TouchableOpacity
+                style={styles.topCloseBtn}
+                onPress={onDismiss}
+                disabled={isLoading}
+              >
+                <Text style={styles.topCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          <View style={styles.bodyWrap}>
             {typeof text === "string" ? (
-              <Text text70 center selectable>
+              <Text style={styles.bodyText} center selectable>
                 {text}
               </Text>
             ) : (
               text
             )}
           </View>
-          <View margin-20 row gap-20 right>
-            <Button
-              text70
-              label={t("misc.close")}
-              {...dialogProperties.dismissAction}
-              link
-              disabled={isLoading}
-              onPress={onDismiss}
-            />
+          <View style={styles.actionsWrap}>
+            {!dialogProperties.hideDefaultDismissAction && (
+              <Button
+                text70
+                label={t("misc.close")}
+                {...dialogProperties.dismissAction}
+                link
+                labelStyle={styles.dismissLabel}
+                disabled={isLoading}
+                onPress={onDismiss}
+              />
+            )}
             {!!dialogProperties.secondaryAction && (
               <Button
                 text70
                 disabled={isLoading}
+                style={styles.secondaryBtn}
+                labelStyle={styles.secondaryBtnLabel}
                 {...dialogProperties.secondaryAction}
                 onPress={async () => {
                   const func: any =
@@ -198,6 +224,8 @@ export function TextDialogProvider({ children }: PropsWithChildren) {
               <Button
                 text70
                 disabled={isLoading}
+                style={styles.mainBtn}
+                labelStyle={styles.mainBtnLabel}
                 {...dialogProperties.mainAction}
                 onPress={async () => {
                   const func: any = dialogProperties.mainAction?.onPress?.();
@@ -220,9 +248,103 @@ export function TextDialogProvider({ children }: PropsWithChildren) {
 
 const styles = StyleSheet.create({
   roundedDialog: {
-    backgroundColor: Colors.$backgroundDefault,
+    backgroundColor: "#050505",
     marginBottom: Constants.isIphoneX ? 0 : 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  dialogBody: {
+    paddingTop: 2,
+  },
+  titleWrap: {
+    marginTop: 16,
+    marginHorizontal: 18,
+    alignItems: "center",
+  },
+  titleRow: {
+    marginTop: 14,
+    marginHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  titleText: {
+    fontSize: 21,
+    lineHeight: 27,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    letterSpacing: -0.1,
+    flex: 1,
+    textAlign: "center",
+    marginLeft: 28,
+  },
+  topCloseBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#121212",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+  },
+  topCloseText: {
+    color: "#E5E7EB",
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 16,
+  },
+  bodyWrap: {
+    marginTop: 10,
+    marginHorizontal: 18,
+    alignItems: "center",
+  },
+  bodyText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#A1A1AA",
+  },
+  actionsWrap: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 16,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: 10,
+    flexWrap: "wrap",
+  },
+  dismissLabel: {
+    color: "#71717A",
+    fontWeight: "600",
+  },
+  secondaryBtn: {
+    minHeight: 42,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    backgroundColor: "#121212",
+    paddingHorizontal: 14,
+  },
+  secondaryBtnLabel: {
+    color: "#E5E7EB",
+    fontWeight: "700",
+  },
+  mainBtn: {
+    minHeight: 42,
+    borderRadius: 12,
+    backgroundColor: "#00FF66",
+    paddingHorizontal: 14,
+  },
+  mainBtnLabel: {
+    color: "#000000",
+    fontWeight: "800",
   },
 });
 
