@@ -10,6 +10,7 @@ import { Modal, StyleSheet, TextInput, Alert } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import StorageHelper from "@/helpers/storage";
 import { useTextDialog } from "@/providers/textDialogProvider";
 import { EBSIDID, EBSIVerifiableCredential } from "@/helpers/ebsi";
@@ -219,17 +220,26 @@ export function AuthProvider({ children }: PropsWithChildren) {
         const walletAction = await new Promise<"create" | "import">(
           (resolve, reject) => {
             enqueueDialog(
-              <Text text70 center selectable>
-                {t("misc.no_wallet")}
-              </Text>,
+              <View style={styles.walletPromptWrap}>
+                <View style={styles.walletPromptIcon}>
+                  <Ionicons name="wallet-outline" size={24} color="#00FF66" />
+                </View>
+                <Text style={styles.walletPromptText} center selectable>
+                  {t("misc.no_wallet")}
+                </Text>
+              </View>,
               {
                 title: t("misc.create_wallet"),
+                showTopClose: true,
+                hideDefaultDismissAction: true,
                 onDismiss: () => {
                   reject("cancel");
                   dismissDialog();
                 },
                 mainAction: {
                   label: t("misc.create"),
+                  style: styles.walletMainAction,
+                  labelStyle: styles.walletMainActionLabel,
                   onPress: async () => {
                     try {
                       resolve("create");
@@ -242,15 +252,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
                 secondaryAction: {
                   label: t("misc.import_wallet"),
                   outline: true,
+                  style: styles.walletSecondaryAction,
+                  labelStyle: styles.walletSecondaryActionLabel,
                   onPress: () => {
                     resolve("import");
                     dismissDialog();
                   },
-                },
-                dismissAction: {
-                  label: t("misc.close"),
-                  color: Colors.textColorDefault,
-                  link: true,
                 },
               },
             );
@@ -370,14 +377,14 @@ export function AuthProvider({ children }: PropsWithChildren) {
       <Modal visible={showCreatedSeedModal} animationType="fade" transparent>
         <View style={styles.overlay}>
           <View style={styles.modalContainer}>
-            <Text text60 center marginB-6>
+            <Text style={styles.modalTitle} center marginB-6>
               {t("misc.your_seed_phrase")}
             </Text>
-            <Text text80 center marginB-14>
+            <Text style={styles.modalSubtitle} center marginB-14>
               {t("misc.save_seed_phrase_warning")}
             </Text>
             <View style={styles.seedPhraseBox}>
-              <Text text70 center selectable>
+              <Text style={styles.seedPhraseText} center selectable>
                 {createdSeedPhrase || t("misc.seed_phrase_unavailable")}
               </Text>
             </View>
@@ -411,14 +418,27 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: "100%",
     maxWidth: 420,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
+    backgroundColor: "#050505",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
     padding: 18,
     shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 18,
+    elevation: 10,
+  },
+  modalTitle: {
+    color: "#FFFFFF",
+    fontSize: 22,
+    fontWeight: "700",
+    letterSpacing: -0.2,
+  },
+  modalSubtitle: {
+    color: "#A1A1AA",
+    fontSize: 14,
+    lineHeight: 21,
   },
   seedGrid: {
     flexDirection: "row",
@@ -438,11 +458,57 @@ const styles = StyleSheet.create({
   },
   seedPhraseBox: {
     borderWidth: 1,
-    borderColor: "#D1D5DB",
-    borderRadius: 8,
-    backgroundColor: "#F9FAFB",
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    borderRadius: 12,
+    backgroundColor: "#121212",
     paddingHorizontal: 12,
     paddingVertical: 14,
+  },
+  seedPhraseText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  walletPromptWrap: {
+    alignItems: "center",
+    gap: 10,
+  },
+  walletPromptIcon: {
+    width: 58,
+    height: 58,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(0, 255, 102, 0.28)",
+    backgroundColor: "rgba(0, 255, 102, 0.12)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  walletPromptText: {
+    color: "#A1A1AA",
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  walletMainAction: {
+    minHeight: 42,
+    borderRadius: 12,
+    backgroundColor: "#00FF66",
+    paddingHorizontal: 14,
+  },
+  walletMainActionLabel: {
+    color: "#000000",
+    fontWeight: "800",
+  },
+  walletSecondaryAction: {
+    minHeight: 42,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    backgroundColor: "#121212",
+    paddingHorizontal: 14,
+  },
+  walletSecondaryActionLabel: {
+    color: "#FFFFFF",
+    fontWeight: "700",
   },
 });
 
