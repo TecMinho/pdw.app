@@ -21,5 +21,11 @@
   "no_credential_found": "No credential found",
   "failed_to_fetch_or_parse_offer": "Failed to fetch or parse offer",
   "cancel": "Cancel",
-  "language": "Language"
+  "language": "Language",
+  "subtitle": "Manage wallet preferences and identity controls",
+  "identity_section": "IDENTITY",
+  "danger_section": "DANGER ZONE",
+  "language_pt": "Portuguese",
+  "language_en": "English",
+  "error_title": "Error"
 }
