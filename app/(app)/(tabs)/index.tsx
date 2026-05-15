@@ -7,6 +7,7 @@ import {
   Modal,
   Image,
   ImageBackground,
+  StyleSheet,
 } from "react-native";
 import SimpleLineIcon from "react-native-vector-icons/SimpleLineIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -15,7 +16,7 @@ import { useRouter } from "expo-router";
 import useSWR, { mutate } from "swr";
 import StorageHelper from "@/helpers/storage";
 import { useTextDialog } from "@/providers/textDialogProvider";
-import { ActionSheet, Button, FloatingButton, View } from "react-native-ui-lib";
+import { Button, FloatingButton, View } from "react-native-ui-lib";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { scanMappings } from "@/helpers/scanMappings";
 import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
@@ -69,113 +70,91 @@ export const CredentialCard: React.FC<CredentialCardProps> = ({
 }) => {
   const isRevoked = status === "revoked";
   const isExpired = status === "expired";
-  const cardColor = isRevoked
-    ? Colors.current.danger?.lighterBackground
-    : Colors.current.success?.lighterBackground;
+  const statusColor = isRevoked ? "#EC003F" : isExpired ? "#FF6900" : "#00BC7D";
+  const statusLabel = isRevoked
+    ? t("main.revoked")
+    : isExpired
+      ? t("main.expired")
+      : t("main.valid");
+  const primaryTitle = name?.trim() ? name : title;
+  const secondaryTitle = name?.trim()
+    ? title
+    : "Decentralized Identity Framework";
+
   return (
-    <Pressable onPress={onPress} style={{ padding: 5 }}>
+    <Pressable onPress={onPress} style={styles.credentialPressable}>
       <ImageBackground
         source={backgroundImage ? { uri: backgroundImage } : undefined}
-        style={{
-          backgroundColor: backgroundImage ? undefined : cardColor,
-          padding: 20,
-          borderRadius: 25,
-          marginVertical: 10,
-          overflow: "hidden",
-          shadowColor: "#000",
-          shadowOpacity: 0.5,
-          shadowRadius: 6,
-          borderColor: "#000",
-          shadowOffset: { width: 0, height: 3 },
-          elevation: 4, // for Android
-          ...(backgroundImage && { minHeight: 200 }),
-          ...style,
-        }}
+        imageStyle={backgroundImage ? styles.credentialBgImage : undefined}
+        style={[
+          styles.credentialCard,
+          backgroundImage
+            ? styles.credentialCardWithBg
+            : styles.credentialCardPlain,
+          style,
+        ]}
       >
-        {backgroundImage && logo ? (
-          <View style={{ alignItems: "flex-start", flexDirection: "row" }}>
-            <Image
-              source={{ uri: logo }}
-              style={{ width: 80, height: 80 }}
-              resizeMode="none"
-            />
-            <Text style={{ fontSize: 12, color: "black", fontWeight: "bold" }}>
-              {name || title}
-            </Text>
+        <View style={styles.cardTopRow}>
+          <View style={styles.cardIconBox}>
+            {logo ? (
+              <Image
+                source={{ uri: logo }}
+                style={styles.cardIconLogo}
+                resizeMode="contain"
+              />
+            ) : (
+              <MaterialCommunityIcons
+                name="shield-check"
+                size={22}
+                color="#00E676"
+              />
+            )}
           </View>
-        ) : !backgroundImage && logo ? (
-          <View>
-            <Image
-              source={{ uri: logo }}
-              style={{ width: 300, height: 100 }}
-              resizeMode="contain"
-            />
-            <Text style={{ fontSize: 12, color: "black", fontWeight: "bold" }}>
-              {name || title}
-            </Text>
-          </View>
-        ) : (
-          <Text style={{ fontSize: 14, color: "black", fontWeight: "bold" }}>
-            {name || title}
-          </Text>
-        )}
-
-        <View style={{ height: 20 }} />
-
-        {!backgroundImage && (
-          <>
+          <View style={styles.cardStatusPill}>
             <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginTop: 15,
-                alignItems: "flex-end",
-              }}
-            >
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontSize: 15,
-                    fontWeight: "bold",
-                    color: isRevoked
-                      ? "black"
-                      : isExpired
-                        ? "#DAA520"
-                        : "green",
-                  }}
-                >
-                  {isRevoked
-                    ? `❌ ${t("main.revoked")}`
-                    : isExpired
-                      ? `⏳ ${t("main.expired")}`
-                      : `✔ ${t("main.valid")}`}
-                </Text>
-              </View>
-              <View>
-                <Text
-                  style={{ fontSize: 14, color: "black", textAlign: "right" }}
-                >
-                  {t("credentials.exp")}:{" "}
-                  {validUntil !== "Invalid Date"
-                    ? validUntil
-                    : expirationDate !== "Invalid Date"
-                      ? expirationDate
-                      : "N/A"}
-                </Text>
-                <Text
-                  style={{ fontSize: 14, color: "black", textAlign: "right" }}
-                >
-                  {t("credentials.issue")}:{" "}
-                  {validFrom !== "Invalid Date"
-                    ? validFrom
-                    : issueDate !== "Invalid Date"
-                      ? issueDate
-                      : "N/A"}
-                </Text>
-              </View>
-            </View>
-          </>
-        )}
+              style={[styles.cardStatusDot, { backgroundColor: statusColor }]}
+            />
+            <Text style={[styles.cardStatusText, { color: statusColor }]}>
+              {statusLabel.toUpperCase()}
+            </Text>
+          </View>
+        </View>
+
+        <Text style={styles.credentialTitle}>{primaryTitle}</Text>
+        <Text style={styles.credentialSubtitle}>{secondaryTitle}</Text>
+
+        {!backgroundImage ? <View style={styles.credentialSpacer} /> : null}
+
+        <View style={styles.credentialMetaRow}>
+          <View>
+            <Text style={styles.metaLabel}>
+              {t("credentials.issue").toUpperCase()}
+            </Text>
+            <Text style={styles.metaValue}>
+              {validFrom !== "Invalid Date"
+                ? validFrom
+                : issueDate !== "Invalid Date"
+                  ? issueDate
+                  : "N/A"}
+            </Text>
+          </View>
+          <View style={styles.metaDivider} />
+          <View>
+            <Text style={styles.metaLabel}>
+              {t("credentials.exp").toUpperCase()}
+            </Text>
+            <Text style={styles.metaValue}>
+              {validUntil !== "Invalid Date"
+                ? validUntil
+                : expirationDate !== "Invalid Date"
+                  ? expirationDate
+                  : "N/A"}
+            </Text>
+          </View>
+          <View style={styles.metaChevronWrap}>
+            <SimpleLineIcon name="arrow-right" size={14} color="#6B7280" />
+          </View>
+        </View>
       </ImageBackground>
     </Pressable>
   );
@@ -488,13 +467,7 @@ export default function Home() {
    */
   return (
     <>
-      <View
-        style={{
-          padding: 20,
-          backgroundColor: Colors.current.background,
-          flex: 1,
-        }}
-      >
+      <View style={styles.screen}>
         <Modal visible={!!data}>
           <CredentialExpandedInfo data={data} status={""} />
           <FloatingButton
@@ -516,101 +489,60 @@ export default function Home() {
             }}
           />
         </Modal>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: 30,
-            marginBottom: 25,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 28,
-              fontWeight: "bold",
-              flex: 1,
-              color: Colors.current.text,
-            }}
-          >
-            {t("main.credentials")}
-          </Text>
-
+        <View style={styles.headerRow}>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.headerTitle}>{t("main.credentials")}</Text>
+          </View>
           <Pressable
             onPress={() => handleSelectExpired(!showExpired)}
-            style={{
-              flexDirection: "row",
-              backgroundColor: Colors.current.background,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              borderRadius: 15,
-              alignItems: "center",
-            }}
+            style={[
+              styles.eyeToggle,
+              showExpired ? styles.eyeToggleActive : styles.eyeToggleInactive,
+            ]}
           >
             <MaterialCommunityIcons
               name={showExpired ? "eye" : "eye-off"}
-              size={13}
-              color={Colors.current.text}
+              size={14}
+              color={showExpired ? "#0B0D10" : "#D1D5DB"}
             />
             <Text
-              style={{
-                color: Colors.current.text,
-                fontSize: 12,
-                fontWeight: "bold",
-                marginLeft: 8,
-              }}
+              style={[
+                styles.eyeToggleText,
+                showExpired
+                  ? styles.eyeToggleTextActive
+                  : styles.eyeToggleTextInactive,
+              ]}
             >
               {showExpired ? t("main.view_all") : t("main.active_only")}
             </Text>
           </Pressable>
         </View>
 
-        <>
-          <View
-            style={{
-              backgroundColor: "#f0f0f0",
-              borderRadius: 17,
-              paddingHorizontal: 12,
-              marginBottom: 20,
-              height: 45,
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <SimpleLineIcon
-              name="magnifier"
-              size={16}
-              color={Colors.current.textMuted}
-            />
+        <View style={styles.searchRow}>
+          <View style={styles.searchInputWrap}>
+            <SimpleLineIcon name="magnifier" size={16} color="#9CA3AF" />
             <TextInput
-              style={{
-                flex: 1,
-                height: 40,
-                marginLeft: 8,
-                color: Colors.light.text,
-              }}
-              placeholderTextColor={Colors.current.textMuted}
+              style={styles.searchInput}
+              placeholderTextColor="#6B7280"
               placeholder={t("main.search")}
               onChangeText={setSearch}
               value={search}
             />
-            <Pressable
-              onPress={() => setIsSheetOpen(true)}
-              style={{ marginLeft: 10 }}
-            >
-              <SimpleLineIcon
-                name="options-vertical"
-                size={20}
-                color={Colors.current.textMuted}
-              />
-            </Pressable>
           </View>
-        </>
+          <Pressable
+            onPress={() => setIsSheetOpen(true)}
+            style={styles.filterButton}
+          >
+            <SimpleLineIcon name="options-vertical" size={16} color="#D1D5DB" />
+          </Pressable>
+        </View>
 
         {credentials ? (
           (filteredCredentials ?? []).length > 0 ? (
             <FlatList
               data={filteredCredentials}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <CredentialCard
@@ -650,8 +582,8 @@ export default function Home() {
         ) : (
           <ActivityIndicator
             size="large"
-            color="#0000ff"
-            style={{ marginTop: 20 }}
+            color={Colors.current.tint}
+            style={styles.loader}
           />
         )}
       </View>
@@ -762,29 +694,349 @@ export default function Home() {
           </View>
         </View>
       </Modal>
-      <ActionSheet
-        title={t("main.filter_by_type")}
+      <Modal
         visible={isSheetOpen}
-        onDismiss={() => setIsSheetOpen(false)}
-        useNativeIOS={true}
-        options={[
-          {
-            label:
-              selectedTypes.length === 0
-                ? `☑️ ${t("main.all")}`
-                : t("main.all"),
-            onPress: () => handleToggleAll(),
-          },
-          ...finalFilterTypes.map((type) => ({
-            label: selectedTypes.includes(type) ? `☑️ ${type}` : `⬜ ${type}`,
-            onPress: () => handleToggleType(type),
-          })),
-          {
-            label: t("main.cancel"),
-            onPress: () => setIsSheetOpen(false),
-          },
-        ]}
-      />
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsSheetOpen(false)}
+      >
+        <Pressable
+          style={styles.sheetBackdrop}
+          onPress={() => setIsSheetOpen(false)}
+        />
+        <View style={styles.sheetWrap}>
+          <View style={styles.sheetCard}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetTitle}>{t("main.filter_by_type")}</Text>
+
+            <Pressable
+              style={styles.sheetItem}
+              onPress={() => {
+                handleToggleAll();
+                setIsSheetOpen(false);
+              }}
+            >
+              <Text
+                style={[
+                  styles.sheetItemText,
+                  selectedTypes.length === 0 && styles.sheetItemTextActive,
+                ]}
+              >
+                {t("main.all")}
+              </Text>
+              <MaterialCommunityIcons
+                name={
+                  selectedTypes.length === 0 ? "check-circle" : "circle-outline"
+                }
+                size={20}
+                color={selectedTypes.length === 0 ? "#00E676" : "#6B7280"}
+              />
+            </Pressable>
+
+            {finalFilterTypes.map((type) => {
+              const selected = selectedTypes.includes(type);
+              return (
+                <Pressable
+                  key={type}
+                  style={styles.sheetItem}
+                  onPress={() => handleToggleType(type)}
+                >
+                  <Text
+                    style={[
+                      styles.sheetItemText,
+                      selected && styles.sheetItemTextActive,
+                    ]}
+                  >
+                    {type}
+                  </Text>
+                  <MaterialCommunityIcons
+                    name={selected ? "check-circle" : "circle-outline"}
+                    size={20}
+                    color={selected ? "#00E676" : "#6B7280"}
+                  />
+                </Pressable>
+              );
+            })}
+
+            <Pressable
+              style={styles.sheetCancel}
+              onPress={() => setIsSheetOpen(false)}
+            >
+              <Text style={styles.sheetCancelText}>{t("main.cancel")}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    backgroundColor: Colors.current.background,
+    flex: 1,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    marginTop: 30,
+    marginBottom: 16,
+    gap: 12,
+  },
+  headerTextWrap: {
+    flex: 1,
+    paddingTop: 14,
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: "700",
+    color: "#F8FAFC",
+    letterSpacing: -0.3,
+  },
+  eyeToggle: {
+    flexDirection: "row",
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 999,
+    alignItems: "center",
+  },
+  eyeToggleActive: {
+    borderColor: "rgba(0,230,118,0.45)",
+    backgroundColor: "#00E676",
+  },
+  eyeToggleInactive: {
+    borderColor: "rgba(255,255,255,0.15)",
+    backgroundColor: "#111418",
+  },
+  eyeToggleText: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginLeft: 8,
+    letterSpacing: 0.2,
+  },
+  eyeToggleTextActive: {
+    color: "#0B0D10",
+  },
+  eyeToggleTextInactive: {
+    color: "#E5E7EB",
+  },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 12,
+  },
+  searchInputWrap: {
+    flex: 1,
+    backgroundColor: "#111418",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    height: 46,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    marginLeft: 8,
+    color: "#F3F4F6",
+  },
+  filterButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    backgroundColor: "#111418",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  listContent: {
+    paddingBottom: 140,
+  },
+  loader: {
+    marginTop: 22,
+  },
+  credentialPressable: {
+    marginTop: 8,
+  },
+  credentialCard: {
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(0, 230, 118, 0.35)",
+    borderLeftWidth: 4,
+    borderLeftColor: "#00E676",
+    overflow: "hidden",
+    backgroundColor: "#0B0D10",
+  },
+  credentialCardPlain: {
+    backgroundColor: "#0B0D10",
+  },
+  credentialCardWithBg: {
+    minHeight: 176,
+    justifyContent: "space-between",
+  },
+  credentialBgImage: {
+    opacity: 0.95,
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  cardIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: "rgba(0,230,118,0.14)",
+    borderWidth: 1,
+    borderColor: "rgba(0,230,118,0.28)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardIconLogo: {
+    width: 24,
+    height: 24,
+  },
+  cardStatusPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: "rgba(0,230,118,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(0,230,118,0.22)",
+  },
+  cardStatusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 999,
+  },
+  cardStatusText: {
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1.1,
+  },
+  credentialTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#F8FAFC",
+    letterSpacing: -0.2,
+    marginBottom: 4,
+  },
+  credentialSubtitle: {
+    fontSize: 13,
+    color: "#A1A1AA",
+    marginBottom: 8,
+  },
+  credentialSpacer: {
+    height: 8,
+  },
+  credentialMetaRow: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.10)",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  metaLabel: {
+    fontSize: 10,
+    color: "#71717A",
+    fontWeight: "700",
+    letterSpacing: 2,
+  },
+  metaValue: {
+    marginTop: 2,
+    fontSize: 13,
+    color: "#F8FAFC",
+    fontWeight: "600",
+  },
+  metaDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: "rgba(255,255,255,0.14)",
+  },
+  metaChevronWrap: {
+    flex: 1,
+    alignItems: "flex-end",
+  },
+  sheetBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.55)",
+  },
+  sheetWrap: {
+    flex: 1,
+    justifyContent: "flex-end",
+    padding: 12,
+  },
+  sheetCard: {
+    backgroundColor: "#111418",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    borderRadius: 22,
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 14,
+  },
+  sheetHandle: {
+    width: 42,
+    height: 4,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.25)",
+    alignSelf: "center",
+    marginBottom: 10,
+  },
+  sheetTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#F8FAFC",
+    marginBottom: 10,
+    paddingHorizontal: 4,
+  },
+  sheetItem: {
+    height: 48,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#0B0D10",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    marginBottom: 8,
+  },
+  sheetItemText: {
+    color: "#D1D5DB",
+    fontSize: 15,
+    fontWeight: "500",
+  },
+  sheetItemTextActive: {
+    color: "#F8FAFC",
+    fontWeight: "700",
+  },
+  sheetCancel: {
+    marginTop: 4,
+    height: 46,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.04)",
+  },
+  sheetCancelText: {
+    color: "#9CA3AF",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+});
