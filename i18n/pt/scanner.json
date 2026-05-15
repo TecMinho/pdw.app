@@ -16,5 +16,9 @@
   "loading": "A carregar",
   "verification_success": "Credential verificada com sucesso!",
   "verification_disclosure_error": "Erro ao validar apresentação com divulgação seletiva",
-  "verification_credential_error": "Erro ao validar a credencial"
+  "verification_credential_error": "Erro ao validar a credencial",
+  "scan_feedback_detected_processing": "Código QR detetado. A processar...",
+  "scan_feedback_place_in_frame": "Posicione o código QR dentro da área destacada",
+  "scan_status_in_progress": "Leitura em progresso",
+  "scan_status_waiting": "À espera de código QR"
 }
