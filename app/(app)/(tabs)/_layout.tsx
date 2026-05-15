@@ -72,15 +72,30 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="scanner"
         options={{
-          headerShown: true,
+          headerShown: false,
           title: t("misc.scan"),
           tabBarLabel: t("misc.scan").toUpperCase(),
-          tabBarStyle: { display: "none" },
           tabBarIcon: ({ color }) => (
             <View style={styles.tabIconWrap}>
               <Fontisto size={21} name="qrcode" color={color} />
             </View>
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="scan-qr"
+        options={{
+          href: null,
+          headerShown: true,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
+        name="import-link"
+        options={{
+          href: null,
+          headerShown: false,
+          tabBarStyle: { display: "none" },
         }}
       />
       <Tabs.Screen

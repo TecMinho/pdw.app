@@ -66,14 +66,6 @@ export default function Home() {
   };
 
   /**
-   * Open the manual credential offer URL input modal
-   * Allows users to manually process credential offers via URL input
-   */
-  const handleEnterOfferUrl = () => {
-    setOfferModalOpen(true);
-  };
-
-  /**
    * Handle credential approval from manual offer processing
    * Saves the newly issued credential and updates the UI state
    */
@@ -169,43 +161,35 @@ export default function Home() {
    * - Safe operations (view DID, add credentials) - blue styling
    * - Destructive operations (delete actions) - red styling for visual warning
    */
-  const settingsItems: {
-    label: string;
-    onPress: () => void;
-    icon: IoniconName;
-    danger: boolean;
-  }[] = [
-    {
-      label: t("settings.view_did"),
-      onPress: handleViewDID,
-      icon: "eye-outline",
-      danger: false,
-    },
-    {
-      label: t("settings.enter_offer_url"),
-      onPress: handleEnterOfferUrl,
-      icon: "link-outline",
-      danger: false,
-    },
-    {
-      label: t("settings.delete_credentials"),
-      onPress: handleDeleteAllCredentials,
-      icon: "trash-outline",
-      danger: true,
-    },
-    {
-      label: t("settings.delete_wallet"),
-      onPress: handleDeleteWallet,
-      icon: "wallet-outline",
-      danger: true,
-    },
-  ];
+ const settingsItems: {
+   label: string;
+   onPress: () => void;
+   icon: IoniconName;
+   danger: boolean;
+ }[] = [
+   {
+     label: t("settings.view_did"),
+     onPress: handleViewDID,
+     icon: "eye-outline",
+     danger: false,
+   },
+   {
+     label: t("settings.delete_credentials"),
+     onPress: handleDeleteAllCredentials,
+     icon: "trash-outline",
+     danger: true,
+   },
+   {
+     label: t("settings.delete_wallet"),
+     onPress: handleDeleteWallet,
+     icon: "wallet-outline",
+     danger: true,
+   },
+ ];
 
-  const identityRows: typeof settingsItems = [
-    settingsItems[0],
-    settingsItems[1],
-  ];
-  const dangerRows: typeof settingsItems = [settingsItems[2], settingsItems[3]];
+const identityRows: typeof settingsItems = [settingsItems[0]];
+const dangerRows: typeof settingsItems = [settingsItems[1], settingsItems[2]];
+
 
   /**
    * Main Render Method - Settings Interface

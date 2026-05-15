@@ -129,7 +129,7 @@ const QrScannerLayout = ({ scanning = false }: QrScannerLayoutProps) => {
       <Animated.View
         style={[
           styles.scanLine,
-          { left: frameX + 16, width: frameSize - 32 },
+{ left: frameX + 8, width: frameSize - 32 },
           scanLineStyle,
         ]}
       />
