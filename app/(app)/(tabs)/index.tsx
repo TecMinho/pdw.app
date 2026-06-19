@@ -602,7 +602,13 @@ export default function Home() {
           }}
         >
           <View
-            style={{ backgroundColor: "white", padding: 20, borderRadius: 10 }}
+            style={{
+              backgroundColor: "#121212",
+              padding: 20,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.08)",
+            }}
           >
             <Text
               style={{ marginBottom: 10, fontWeight: "bold", fontSize: 16 }}
@@ -618,7 +624,9 @@ export default function Home() {
               style={{
                 height: 40,
                 borderWidth: 1,
-                borderColor: "#ccc",
+                borderColor: "rgba(255,255,255,0.08)",
+                backgroundColor: "#101418",
+                color: "#FFFFFF",
                 paddingHorizontal: 10,
                 borderRadius: 5,
                 marginBottom: 20,
@@ -775,7 +783,7 @@ const styles = StyleSheet.create({
   screen: {
     paddingHorizontal: 20,
     paddingTop: 20,
-    backgroundColor: Colors.current.background,
+    backgroundColor: "#050505",
     flex: 1,
   },
   headerRow: {
@@ -893,18 +901,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   cardIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    backgroundColor: "rgba(0,230,118,0.14)",
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.04)",
     borderWidth: 1,
-    borderColor: "rgba(0,230,118,0.28)",
+    borderColor: "rgba(0,230,118,0.24)",
     alignItems: "center",
     justifyContent: "center",
   },
   cardIconLogo: {
-    width: 24,
-    height: 24,
+    width: 34,
+    height: 34,
+    opacity: 0.98,
   },
   cardStatusPill: {
     flexDirection: "row",

@@ -92,7 +92,7 @@ export default function AuthScreen() {
           >
             <Image
               source={require("@/assets/images/logos/tecminho.png")}
-              tintColor={Colors.current.image.getTintColor()}
+              tintColor="#FFFFFF"
               style={styles.footerLogo}
               alt="Logo TecMinho"
             />
@@ -113,7 +113,7 @@ export default function AuthScreen() {
           >
             <Image
               source={require("@/assets/images/logos/ebsi.png")}
-              tintColor={Colors.current.image.getTintColor()}
+              tintColor="#FFFFFF"
               style={styles.footerLogo}
               alt="Logo EBSI"
             />

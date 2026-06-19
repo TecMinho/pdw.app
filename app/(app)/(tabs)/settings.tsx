@@ -223,14 +223,20 @@ const dangerRows: typeof settingsItems = [settingsItems[1], settingsItems[2]];
             backgroundColor: "#E6E6E6",
             label: t("settings.reject"),
           }}
-          />
-        </Modal>
+        />
+      </Modal>
       <SafeAreaView style={styles.safe}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.headerRow}>
             <Pressable
               onPress={() => router.replace("/(app)/(tabs)")}
-              style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [
+                styles.backBtn,
+                pressed && styles.pressed,
+              ]}
             >
               <Ionicons name="chevron-back-outline" size={22} color="#F8FAFC" />
             </Pressable>
@@ -244,7 +250,10 @@ const dangerRows: typeof settingsItems = [settingsItems[1], settingsItems[2]];
               <Pressable
                 key={label}
                 onPress={onPress}
-                style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+                style={({ pressed }) => [
+                  styles.row,
+                  pressed && styles.rowPressed,
+                ]}
               >
                 <View style={styles.rowIconBox}>
                   <Ionicons name={icon} size={18} color="#00E676" />
@@ -258,7 +267,10 @@ const dangerRows: typeof settingsItems = [settingsItems[1], settingsItems[2]];
               onPress={() =>
                 changeLanguage(currentLanguage === "pt" ? "en" : "pt")
               }
-              style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+              style={({ pressed }) => [
+                styles.row,
+                pressed && styles.rowPressed,
+              ]}
             >
               <View style={styles.rowIconBox}>
                 <Ionicons name="globe-outline" size={18} color="#00E676" />
@@ -273,10 +285,17 @@ const dangerRows: typeof settingsItems = [settingsItems[1], settingsItems[2]];
 
             <Pressable
               onPress={() => router.navigate("/about")}
-              style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+              style={({ pressed }) => [
+                styles.row,
+                pressed && styles.rowPressed,
+              ]}
             >
               <View style={styles.rowIconBox}>
-                <Ionicons name="information-circle-outline" size={18} color="#00E676" />
+                <Ionicons
+                  name="information-circle-outline"
+                  size={18}
+                  color="#00E676"
+                />
               </View>
               <Text style={styles.rowLabel}>{t("settings.about")}</Text>
               <Ionicons name="chevron-forward" size={16} color="#6B7280" />
@@ -288,7 +307,10 @@ const dangerRows: typeof settingsItems = [settingsItems[1], settingsItems[2]];
               <Pressable
                 key={label}
                 onPress={onPress}
-                style={({ pressed }) => [styles.dangerRow, pressed && styles.dangerRowPressed]}
+                style={({ pressed }) => [
+                  styles.dangerRow,
+                  pressed && styles.dangerRowPressed,
+                ]}
               >
                 <View style={styles.dangerIconBox}>
                   <Ionicons name={icon} size={18} color="#EF4444" />
@@ -306,22 +328,28 @@ const dangerRows: typeof settingsItems = [settingsItems[1], settingsItems[2]];
                   "https://ec.europa.eu/digital-building-blocks/sites/display/EBSI",
                 )
               }
-              style={({ pressed }) => [styles.logoBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [
+                styles.logoBtn,
+                pressed && styles.pressed,
+              ]}
             >
               <Image
                 source={require("@/assets/images/logos/ebsi.png")}
-                tintColor={ThemeColors.current.image.getTintColor()}
+                tintColor="#FFFFFF"
                 style={styles.logo}
                 alt="Logo EBSI"
               />
             </Pressable>
             <Pressable
               onPress={() => Linking.openURL("https://www.tecminho.uminho.pt")}
-              style={({ pressed }) => [styles.logoBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [
+                styles.logoBtn,
+                pressed && styles.pressed,
+              ]}
             >
               <Image
                 source={require("@/assets/images/logos/tecminho.png")}
-                tintColor={ThemeColors.current.image.getTintColor()}
+                tintColor="#FFFFFF"
                 style={styles.logo}
                 alt="Logo TecMinho"
               />
@@ -345,7 +373,13 @@ const dangerRows: typeof settingsItems = [settingsItems[1], settingsItems[2]];
           }}
         >
           <View
-            style={{ backgroundColor: "white", padding: 20, borderRadius: 10 }}
+            style={{
+              backgroundColor: "#121212",
+              padding: 20,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.08)",
+            }}
           >
             <Text
               style={{ marginBottom: 10, fontWeight: "bold", fontSize: 16 }}
@@ -361,7 +395,9 @@ const dangerRows: typeof settingsItems = [settingsItems[1], settingsItems[2]];
               style={{
                 height: 40,
                 borderWidth: 1,
-                borderColor: "#ccc",
+                borderColor: "rgba(255,255,255,0.08)",
+                backgroundColor: "#101418",
+                color: "#FFFFFF",
                 paddingHorizontal: 10,
                 borderRadius: 5,
                 marginBottom: 20,
@@ -490,14 +526,28 @@ const dangerRows: typeof settingsItems = [settingsItems[1], settingsItems[2]];
           }}
         >
           <View
-            style={{ backgroundColor: "white", padding: 20, borderRadius: 10 }}
+            style={{
+              backgroundColor: "#121212",
+              padding: 20,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.08)",
+            }}
           >
             <Text
-              style={{ marginBottom: 10, fontWeight: "bold", fontSize: 16 }}
+              style={{ marginBottom: 10, fontWeight: "bold", fontSize: 16, color: ThemeColors.current.text }}
             >
               {t("settings.your_did")}
             </Text>
-            <Text style={{ marginBottom: 10, fontSize: 12 }}>{walletDID}</Text>
+            <Text
+              style={{
+                marginBottom: 10,
+                fontSize: 12,
+                color: ThemeColors.current.text,
+              }}
+            >
+              {walletDID}
+            </Text>
             <View style={{ alignItems: "center", marginBottom: 20 }}>
               <DIDQRCode value={walletDID} size={250} />
             </View>

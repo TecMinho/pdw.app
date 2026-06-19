@@ -445,7 +445,7 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
             <Button
               marginT-10
               label={t("credentials.cancel")}
-              backgroundColor="#ccc"
+              backgroundColor="#101418"
               onPress={() => {
                 setShowModal(false);
                 onCancel?.();
@@ -479,7 +479,7 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
             <View marginT-30 row spread>
               <Button
                 label={t("credentials.back")}
-                backgroundColor="#E0E0E0"
+                backgroundColor="#121212"
                 labelStyle={{ color: "#333", fontWeight: "500" }}
                 style={{ flex: 1, marginRight: 10 }}
                 onPress={() => {

@@ -17,8 +17,7 @@ interface ColorSchemaProps {
   warning?: { text: string, background: string, lighterBackground?: string};
 }
 
-const colorScheme: string = Appearance.getColorScheme() || 'light';
-
+const colorScheme: string = "dark";
 const textColorDefault: string = '#111';
 const tintColorLight: string = '#39AD70';
 const tintColorDark: string = '#39AD70';
@@ -142,7 +141,7 @@ Colors.loadSchemes({
 
 // Set the react native ui lib schema
 // Colors.setScheme(<SchemeType> colorScheme);
-Colors.setScheme("light"); // Always Light
+Colors.setScheme("dark"); // Always dark
 
 
 /**

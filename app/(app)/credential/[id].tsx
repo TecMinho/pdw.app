@@ -2,8 +2,14 @@ import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import useSWR from "swr";
 import StorageHelper from "@/helpers/storage";
 import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
-import { View, Text, Pressable, StyleSheet, Modal } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  Modal,
+  ScrollView,
+} from "react-native";import Ionicons from "@expo/vector-icons/Ionicons";
 import SimpleLineIcon from "react-native-vector-icons/SimpleLineIcons";
 import { useState, useEffect } from "react";
 import { useTextDialog } from "@/providers/textDialogProvider";
@@ -29,6 +35,7 @@ export default function CredentialPage() {
   const [isRevoked, setIsRevoked] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isFullInfoOpen, setIsFullInfoOpen] = useState(false);
   const { enqueueDialog } = useTextDialog();
 
   /**
@@ -115,11 +122,19 @@ export default function CredentialPage() {
           <View style={styles.headerLeft}>
             <Pressable
               onPress={() => router.replace("/(app)/(tabs)")}
-              style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [
+                styles.iconBtn,
+                pressed && styles.pressed,
+              ]}
             >
               <Ionicons name="chevron-back-outline" size={22} color="#F8FAFC" />
             </Pressable>
-            <Text style={styles.headerTitle}>
+            <Text
+              style={styles.headerTitle}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
               {t("credentials.credential_details")}
             </Text>
           </View>
@@ -145,26 +160,55 @@ export default function CredentialPage() {
         animationType="fade"
         onRequestClose={() => setIsSheetOpen(false)}
       >
-        <Pressable style={styles.sheetBackdrop} onPress={() => setIsSheetOpen(false)} />
+        <Pressable
+          style={styles.sheetBackdrop}
+          onPress={() => setIsSheetOpen(false)}
+        />
         <View style={styles.sheetWrap}>
           <View style={styles.sheetCard}>
             <View style={styles.sheetHandle} />
             <Text style={styles.sheetTitle}>{t("credentials.actions")}</Text>
 
             <Pressable
-              style={({ pressed }) => [styles.sheetItem, pressed && styles.sheetItemPressed]}
+              style={({ pressed }) => [
+                styles.sheetItem,
+                pressed && styles.sheetItemPressed,
+              ]}
               onPress={async () => {
                 setIsSheetOpen(false);
                 await generateAndSharePDF(credential);
               }}
             >
               <View style={styles.sheetItemLeft}>
-                <Ionicons name="document-text-outline" size={18} color="#00E676" />
-                <Text style={styles.sheetItemText}>{t("credentials.generate_pdf")}</Text>
+                <Ionicons
+                  name="document-text-outline"
+                  size={18}
+                  color="#00E676"
+                />
+                <Text style={styles.sheetItemText}>
+                  {t("credentials.generate_pdf")}
+                </Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#6B7280" />
             </Pressable>
-
+            <Pressable
+              style={({ pressed }) => [
+                styles.sheetItem,
+                pressed && styles.sheetItemPressed,
+              ]}
+              onPress={() => {
+                setIsSheetOpen(false);
+                setIsFullInfoOpen(true);
+              }}
+            >
+              <View style={styles.sheetItemLeft}>
+                <Ionicons name="document-outline" size={18} color="#60A5FA" />
+                <Text style={styles.sheetItemText}>
+                  {t("credentials.view_all_information")}
+                </Text>{" "}
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+            </Pressable>
             <Pressable
               style={({ pressed }) => [
                 styles.sheetItem,
@@ -201,11 +245,39 @@ export default function CredentialPage() {
             </Pressable>
 
             <Pressable
-              style={({ pressed }) => [styles.sheetCancel, pressed && styles.sheetItemPressed]}
+              style={({ pressed }) => [
+                styles.sheetCancel,
+                pressed && styles.sheetItemPressed,
+              ]}
               onPress={() => setIsSheetOpen(false)}
             >
               <Text style={styles.sheetCancelText}>{t("main.cancel")}</Text>
             </Pressable>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        visible={isFullInfoOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsFullInfoOpen(false)}
+      >
+        <View style={styles.fullInfoBackdrop}>
+          <View style={styles.fullInfoCard}>
+            <View style={styles.fullInfoHeader}>
+              <Text style={styles.fullInfoTitle}>
+                {t("credentials.all_information")}
+              </Text>{" "}
+              <Pressable onPress={() => setIsFullInfoOpen(false)}>
+                <Ionicons name="close" size={20} color="#F8FAFC" />
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.fullInfoText}>
+                {JSON.stringify(credential, null, 2)}
+              </Text>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -237,11 +309,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    fontSize: 28,
+    flex: 1,
+    fontSize: 24,
     fontWeight: "700",
     color: "#F8FAFC",
     letterSpacing: -0.2,
-    flexShrink: 1,
   },
   iconBtn: {
     width: 40,
@@ -345,5 +417,35 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#9CA3AF",
     fontWeight: "600",
+  },
+  fullInfoBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    padding: 16,
+  },
+  fullInfoCard: {
+    maxHeight: "80%",
+    borderRadius: 20,
+    backgroundColor: "#111418",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    padding: 16,
+  },
+  fullInfoHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  fullInfoTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#F8FAFC",
+  },
+  fullInfoText: {
+    fontSize: 13,
+    lineHeight: 20,
+    color: "#E5E7EB",
   },
 });

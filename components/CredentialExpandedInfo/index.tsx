@@ -1,10 +1,6 @@
 import { Text, View } from "react-native-ui-lib";
 import React, { useEffect, useState } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Image,
-} from "react-native";
+import { ScrollView, StyleSheet, Image } from "react-native";
 import _ from "lodash";
 import { useLocalSearchParams } from "expo-router";
 import StorageHelper from "@/helpers/storage";
@@ -131,43 +127,69 @@ export default function CredentialExpandedInfo({
 
   const grouped = _.groupBy(filteredData, (item) => item.key.split(".")[0]);
   const issuerItems = grouped.issuer || grouped.credentialIssuer || [];
-  const subjectItems = grouped.credentialSubject || [];
-  const otherSections = Object.entries(grouped).filter(
-    ([section]) =>
-      ![
-        "issuer",
-        "credentialIssuer",
-        "credentialSubject",
-        "issuanceDate",
-        "issued",
-        "validUntil",
-        "expirationDate",
-        "validFrom",
-      ].includes(section),
-  );
 
-  const issuedValue =
-    credential.issuanceDate || credential.validFrom || "N/A";
-  const expiresValue = credential.validUntil || credential.expirationDate || "N/A";
+  const issuedValue = credential.issuanceDate || credential.validFrom || "N/A";
+  const expiresValue =
+    credential.validUntil || credential.expirationDate || "N/A";
+
   const formatMaybeDate = (value: string) => {
     if (!value || value === "N/A") return "N/A";
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString();
   };
+
+  const toDisplay = (value: unknown) => {
+    if (value === null || value === undefined || value === "") return "N/A";
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+  };
+
+  const cs: any = credential?.credentialSubject ?? {};
+  const subjectItems = [
+    {
+      key: "credentialSubject.identifier.schemeID",
+      displayValue: toDisplay(cs?.identifier?.schemeID),
+    },
+    {
+      key: "credentialSubject.identifier.value",
+      displayValue: toDisplay(cs?.identifier?.value),
+    },
+    {
+      key: "credentialSubject.achieved.title",
+      displayValue: cs?.achieved?.title
+        ? `${cs.achieved.title}${
+            cs?.achieved?.wasDerivedFrom?.title
+              ? ` (${cs.achieved.wasDerivedFrom.title})`
+              : ""
+          }`
+        : "N/A",
+    },
+    {
+      key: "credentialSubject.achieved.wasDerivedFrom.grade",
+      displayValue: toDisplay(cs?.achieved?.wasDerivedFrom?.grade),
+    },
+  ];
+
   const titleText = Array.isArray(credential.type)
     ? credential.type[credential.type.length - 1]
     : _.startCase(credential.type || t("credentials.verifiable_credential"));
+
   const subtitleText =
     credential.name || t("credentials.verifiable_credential");
+
   const statusText = isRevoked
     ? t("credentials.revoked")
     : isExpired
       ? t("credentials.expired")
       : t("credentials.valid");
+
   const statusColor = isRevoked ? "#EF4444" : isExpired ? "#F59E0B" : "#00E676";
 
   return (
-    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.heroCard}>
         <View style={styles.heroGlow} />
         <View style={styles.heroHeader}>
@@ -182,8 +204,12 @@ export default function CredentialExpandedInfo({
               <Ionicons name="school-outline" size={26} color="#3B82F6" />
             )}
           </View>
-          <View style={[styles.statusPill, { borderColor: `${statusColor}55` }]}>
-            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+          <View
+            style={[styles.statusPill, { borderColor: `${statusColor}55` }]}
+          >
+            <View
+              style={[styles.statusDot, { backgroundColor: statusColor }]}
+            />
             <Text style={[styles.statusText, { color: statusColor }]}>
               {statusText.toUpperCase()}
             </Text>
@@ -197,13 +223,19 @@ export default function CredentialExpandedInfo({
 
         <View style={styles.heroMeta}>
           <View>
-            <Text style={styles.metaLabel}>{t("credentials.issue").toUpperCase()}</Text>
+            <Text style={styles.metaLabel}>
+              {t("credentials.issue").toUpperCase()}
+            </Text>
             <Text style={styles.metaValue}>{formatMaybeDate(issuedValue)}</Text>
           </View>
           <View style={styles.metaDivider} />
           <View>
-            <Text style={styles.metaLabel}>{t("credentials.exp").toUpperCase()}</Text>
-            <Text style={styles.metaValue}>{formatMaybeDate(expiresValue)}</Text>
+            <Text style={styles.metaLabel}>
+              {t("credentials.exp").toUpperCase()}
+            </Text>
+            <Text style={styles.metaValue}>
+              {formatMaybeDate(expiresValue)}
+            </Text>
           </View>
         </View>
       </View>
@@ -215,7 +247,10 @@ export default function CredentialExpandedInfo({
             {issuerItems.map((item, idx) => (
               <View
                 key={item.key}
-                style={[styles.fieldRow, idx < issuerItems.length - 1 && styles.fieldBorder]}
+                style={[
+                  styles.fieldRow,
+                  idx < issuerItems.length - 1 && styles.fieldBorder,
+                ]}
               >
                 <Text style={styles.fieldLabel}>
                   {_.startCase(item.key.split(".").slice(-1).join(""))}
@@ -235,59 +270,33 @@ export default function CredentialExpandedInfo({
         </View>
       )}
 
-      {subjectItems.length > 0 && (
-        <View style={styles.sectionWrap}>
-          <Text style={styles.sectionTitle}>CREDENTIAL SUBJECT</Text>
-          <View style={styles.sectionPanel}>
-            {subjectItems.map((item, idx) => (
-              <View
-                key={item.key}
-                style={[styles.fieldRow, idx < subjectItems.length - 1 && styles.fieldBorder]}
+      <View style={styles.sectionWrap}>
+        <Text style={styles.sectionTitle}>CREDENTIAL SUBJECT</Text>
+        <View style={styles.sectionPanel}>
+          {subjectItems.map((item, idx) => (
+            <View
+              key={item.key}
+              style={[
+                styles.fieldRow,
+                idx < subjectItems.length - 1 && styles.fieldBorder,
+              ]}
+            >
+              <Text style={styles.fieldLabel}>
+                {_.startCase(item.key.split(".").slice(-1).join(""))}
+              </Text>
+              <Text
+                style={[
+                  styles.fieldValue,
+                  item.displayValue.length > 42 && styles.fieldValueCompact,
+                ]}
+                numberOfLines={2}
               >
-                <Text style={styles.fieldLabel}>
-                  {_.startCase(item.key.split(".").slice(-1).join(""))}
-                </Text>
-                <Text
-                  style={[
-                    styles.fieldValue,
-                    item.displayValue.length > 42 && styles.fieldValueCompact,
-                  ]}
-                  numberOfLines={2}
-                >
-                  {item.displayValue}
-                </Text>
-              </View>
-            ))}
-          </View>
+                {item.displayValue}
+              </Text>
+            </View>
+          ))}
         </View>
-      )}
-
-      {otherSections.map(([section, items]) => (
-        <View style={styles.sectionWrap} key={section}>
-          <Text style={styles.sectionTitle}>{_.startCase(section)}</Text>
-          <View style={styles.sectionPanel}>
-            {items.map((item, idx) => (
-              <View
-                key={item.key}
-                style={[styles.fieldRow, idx < items.length - 1 && styles.fieldBorder]}
-              >
-                <Text style={styles.fieldLabel}>
-                  {_.startCase(item.key.split(".").slice(-1).join(""))}
-                </Text>
-                <Text
-                  style={[
-                    styles.fieldValue,
-                    item.displayValue.length > 42 && styles.fieldValueCompact,
-                  ]}
-                  numberOfLines={2}
-                >
-                  {item.displayValue}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      ))}
+      </View>
     </ScrollView>
   );
 }

@@ -223,7 +223,7 @@ const ConformanceCredentialSelector: React.FC<
         <View marginT-20 row spread>
           <Button
             label={t("credentials.cancel")}
-            backgroundColor="#ccc"
+            backgroundColor="#101418"
             onPress={() => {
               setShowModal(false);
               onCancel?.();

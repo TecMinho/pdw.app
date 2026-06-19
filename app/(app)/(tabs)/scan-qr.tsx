@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { Modal, StyleSheet } from "react-native";
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Camera, CameraView } from "expo-camera";
 import {
   Colors,
@@ -67,7 +67,7 @@ export default function Scanner() {
         />
       ),
       headerStyle: {
-        backgroundColor: ThemeColors.current.background,
+        backgroundColor: "#050505",
         borderBottomWidth: 0,
         elevation: 0,
         shadowOpacity: 0,
@@ -328,7 +328,9 @@ export default function Scanner() {
   if (hasPermission === null) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>{t("scanner.requesting_camera_permission")}</Text>
+        <Text style={styles.title}>
+          {t("scanner.requesting_camera_permission")}
+        </Text>
       </View>
     );
   }
@@ -355,7 +357,7 @@ export default function Scanner() {
   return (
     <View style={styles.container}>
       <Modal visible={!!data}>
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#06080C" }}>
           <CredentialExpandedInfo data={data} status={""} />
           <FloatingButton
             visible
@@ -370,8 +372,8 @@ export default function Scanner() {
               outline: false,
               disabled: loading,
               onPress: onReject,
-              color: "#7C7C7C",
-              backgroundColor: "#E6E6E6",
+              color: "#E5E7EB",
+              backgroundColor: "#101418",
               label: t("scanner.reject"),
             }}
           />
@@ -614,21 +616,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   title: {
-      fontSize: 24,
-      fontWeight: "bold",
-      paddingTop: 30,
-      paddingBottom: 15,
-      color: ThemeColors.current.title,
+    fontSize: 24,
+    fontWeight: "bold",
+    paddingTop: 30,
+    paddingBottom: 15,
+    color: ThemeColors.current.title,
   },
   text: {
-      fontSize: 16,
-      color: ThemeColors.current.text,
+    fontSize: 16,
+    color: ThemeColors.current.text,
   },
   link: {
-      cursor: "pointer",
-      color: ThemeColors.current.tint,
+    cursor: "pointer",
+    color: ThemeColors.current.tint,
   },
   linkPressed: {
-      opacity: 0.7
+    opacity: 0.7,
   },
 });
