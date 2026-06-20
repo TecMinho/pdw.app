@@ -106,7 +106,7 @@ function RootLayoutNav() {
           <CredentialSelectorProvider>
             <TextDialogProvider>
               <AuthProvider>
-                <StatusBar animated style={Appearance.getColorScheme() == "dark" ? "light" : "dark"} translucent />
+                <StatusBar animated style="light" translucent />
                 <Slot />
               </AuthProvider>
             </TextDialogProvider>

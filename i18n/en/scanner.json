@@ -16,5 +16,9 @@
   "loading": "Loading",
   "verification_success": "Credential successfully verified!",
   "verification_disclosure_error": "Error while validating selective disclosure presentation",
-  "verification_credential_error": "Error while validating credential"
+  "verification_credential_error": "Error while validating credential",
+  "scan_feedback_detected_processing": "QR code detected. Processing...",
+  "scan_feedback_place_in_frame": "Place the QR code inside the highlighted frame",
+  "scan_status_in_progress": "Scanning in progress",
+  "scan_status_waiting": "Waiting for QR code"
 }

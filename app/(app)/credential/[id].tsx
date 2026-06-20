@@ -2,15 +2,20 @@ import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import useSWR from "swr";
 import StorageHelper from "@/helpers/storage";
 import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
-import { View, Text, Pressable } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  Modal,
+  ScrollView,
+} from "react-native";import Ionicons from "@expo/vector-icons/Ionicons";
 import SimpleLineIcon from "react-native-vector-icons/SimpleLineIcons";
 import { useState, useEffect } from "react";
-import { ActionSheet } from "react-native-ui-lib";
 import { useTextDialog } from "@/providers/textDialogProvider";
 import { generateAndSharePDF } from "@/utils/pdfGenerator";
 import { useLocale } from "@/context/TranslationContext";
-import ThemeColors from "@/constants/Colors";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
  * Credential Detail Page Component
@@ -30,6 +35,7 @@ export default function CredentialPage() {
   const [isRevoked, setIsRevoked] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isFullInfoOpen, setIsFullInfoOpen] = useState(false);
   const { enqueueDialog } = useTextDialog();
 
   /**
@@ -110,89 +116,336 @@ export default function CredentialPage() {
    * - Real-time status indicators
    */
   return (
-    <View style={{ flex: 1, backgroundColor: ThemeColors.current.background }}>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          padding: 15,
-          paddingTop: 55,
-          marginBottom: -20,
-          justifyContent: "space-between",
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Pressable onPress={() => router.replace("/(app)/(tabs)")}>
-            <Ionicons
-              name="chevron-back-outline"
-              size={28}
-              color={ThemeColors.current.text}
-            />
-          </Pressable>
-          <Text
-            style={{
-              fontSize: 28,
-              fontWeight: "bold",
-              marginLeft: 2,
-              color: ThemeColors.current.text,
-            }}
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.container}>
+        <View style={styles.headerRow}>
+          <View style={styles.headerLeft}>
+            <Pressable
+              onPress={() => router.replace("/(app)/(tabs)")}
+              style={({ pressed }) => [
+                styles.iconBtn,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Ionicons name="chevron-back-outline" size={22} color="#F8FAFC" />
+            </Pressable>
+            <Text
+              style={styles.headerTitle}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
+              {t("credentials.credential_details")}
+            </Text>
+          </View>
+          <Pressable
+            onPress={() => setIsSheetOpen(true)}
+            style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
           >
-            {t("credentials.credential_details")}
-          </Text>
+            <SimpleLineIcon name="options-vertical" size={16} color="#E5E7EB" />
+          </Pressable>
         </View>
-        <Pressable onPress={() => setIsSheetOpen(true)}>
-          <SimpleLineIcon
-            name="options-vertical"
-            size={20}
-            color={ThemeColors.current.text}
+
+        <View style={styles.detailWrap}>
+          <CredentialExpandedInfo
+            status={isRevoked ? "revoked" : isExpired ? "expired" : "valid"}
+            data={credential}
           />
-        </Pressable>
+        </View>
       </View>
 
-      <CredentialExpandedInfo
-        status={isRevoked ? "revoked" : isExpired ? "expired" : "valid"}
-        data={credential}
-      />
-
-      <ActionSheet
-        title={t("credentials.actions")}
+      <Modal
         visible={isSheetOpen}
-        onDismiss={() => setIsSheetOpen(false)}
-        destructiveButtonIndex={0}
-        useNativeIOS={true}
-        options={[
-          {
-            label: t("credentials.generate_pdf"),
-            onPress: async () => {
-              setIsSheetOpen(false);
-              await generateAndSharePDF(credential);
-            },
-          },
-          {
-            label: t("credentials.delete_this_credential"),
-            onPress: async () => {
-              enqueueDialog(t("credentials.confirm_delete_credential"), {
-                title: t("credentials.delete_credential"),
-                mainAction: {
-                  label: t("credentials.delete"),
-                  backgroundColor: "red",
-                  onPress: async () => {
-                    const allCredentials =
-                      (await StorageHelper.loadCredentials()) || [];
-                    const filtered = allCredentials.filter(
-                      (c) => c.id !== credentialId,
-                    );
-                    await StorageHelper.saveCredentials(filtered);
-                    setIsSheetOpen(false);
-                    router.replace("/(app)/(tabs)");
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsSheetOpen(false)}
+      >
+        <Pressable
+          style={styles.sheetBackdrop}
+          onPress={() => setIsSheetOpen(false)}
+        />
+        <View style={styles.sheetWrap}>
+          <View style={styles.sheetCard}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetTitle}>{t("credentials.actions")}</Text>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.sheetItem,
+                pressed && styles.sheetItemPressed,
+              ]}
+              onPress={async () => {
+                setIsSheetOpen(false);
+                await generateAndSharePDF(credential);
+              }}
+            >
+              <View style={styles.sheetItemLeft}>
+                <Ionicons
+                  name="document-text-outline"
+                  size={18}
+                  color="#00E676"
+                />
+                <Text style={styles.sheetItemText}>
+                  {t("credentials.generate_pdf")}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.sheetItem,
+                pressed && styles.sheetItemPressed,
+              ]}
+              onPress={() => {
+                setIsSheetOpen(false);
+                setIsFullInfoOpen(true);
+              }}
+            >
+              <View style={styles.sheetItemLeft}>
+                <Ionicons name="document-outline" size={18} color="#60A5FA" />
+                <Text style={styles.sheetItemText}>
+                  {t("credentials.view_all_information")}
+                </Text>{" "}
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.sheetItem,
+                styles.sheetItemDanger,
+                pressed && styles.sheetItemDangerPressed,
+              ]}
+              onPress={async () => {
+                setIsSheetOpen(false);
+                enqueueDialog(t("credentials.confirm_delete_credential"), {
+                  title: t("credentials.delete_credential"),
+                  mainAction: {
+                    label: t("credentials.delete"),
+                    backgroundColor: "red",
+                    onPress: async () => {
+                      const allCredentials =
+                        (await StorageHelper.loadCredentials()) || [];
+                      const filtered = allCredentials.filter(
+                        (c) => c.id !== credentialId,
+                      );
+                      await StorageHelper.saveCredentials(filtered);
+                      router.replace("/(app)/(tabs)");
+                    },
                   },
-                },
-              });
-            },
-            labelStyle: { color: "red" },
-          },
-        ]}
-      />
-    </View>
+                });
+              }}
+            >
+              <View style={styles.sheetItemLeft}>
+                <Ionicons name="trash-outline" size={18} color="#F87171" />
+                <Text style={styles.sheetItemDangerText}>
+                  {t("credentials.delete_this_credential")}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#B91C1C" />
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.sheetCancel,
+                pressed && styles.sheetItemPressed,
+              ]}
+              onPress={() => setIsSheetOpen(false)}
+            >
+              <Text style={styles.sheetCancelText}>{t("main.cancel")}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        visible={isFullInfoOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsFullInfoOpen(false)}
+      >
+        <View style={styles.fullInfoBackdrop}>
+          <View style={styles.fullInfoCard}>
+            <View style={styles.fullInfoHeader}>
+              <Text style={styles.fullInfoTitle}>
+                {t("credentials.all_information")}
+              </Text>{" "}
+              <Pressable onPress={() => setIsFullInfoOpen(false)}>
+                <Ionicons name="close" size={20} color="#F8FAFC" />
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.fullInfoText}>
+                {JSON.stringify(credential, null, 2)}
+              </Text>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: "#06080C",
+  },
+  container: {
+    flex: 1,
+    backgroundColor: "#06080C",
+  },
+  headerRow: {
+    marginTop: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    flex: 1,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#F8FAFC",
+    letterSpacing: -0.2,
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.14)",
+    backgroundColor: "#101418",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pressed: {
+    opacity: 0.78,
+  },
+  detailWrap: {
+    flex: 1,
+    marginTop: 4,
+  },
+  sheetBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.52)",
+  },
+  sheetWrap: {
+    flex: 1,
+    justifyContent: "flex-end",
+    padding: 12,
+  },
+  sheetCard: {
+    borderRadius: 22,
+    backgroundColor: "#111418",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 14,
+  },
+  sheetHandle: {
+    width: 42,
+    height: 4,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.24)",
+    alignSelf: "center",
+    marginBottom: 10,
+  },
+  sheetTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#F8FAFC",
+    marginBottom: 10,
+    paddingHorizontal: 4,
+  },
+  sheetItem: {
+    minHeight: 50,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    backgroundColor: "#0B0D10",
+  },
+  sheetItemLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+  },
+  sheetItemPressed: {
+    backgroundColor: "#151A20",
+  },
+  sheetItemText: {
+    fontSize: 15,
+    color: "#E5E7EB",
+    fontWeight: "600",
+  },
+  sheetItemDanger: {
+    borderColor: "rgba(239,68,68,0.30)",
+    backgroundColor: "rgba(127,29,29,0.20)",
+  },
+  sheetItemDangerPressed: {
+    backgroundColor: "rgba(127,29,29,0.32)",
+  },
+  sheetItemDangerText: {
+    fontSize: 15,
+    color: "#FCA5A5",
+    fontWeight: "600",
+  },
+  sheetCancel: {
+    marginTop: 4,
+    height: 46,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  sheetCancelText: {
+    fontSize: 15,
+    color: "#9CA3AF",
+    fontWeight: "600",
+  },
+  fullInfoBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    padding: 16,
+  },
+  fullInfoCard: {
+    maxHeight: "80%",
+    borderRadius: 20,
+    backgroundColor: "#111418",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    padding: 16,
+  },
+  fullInfoHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  fullInfoTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#F8FAFC",
+  },
+  fullInfoText: {
+    fontSize: 13,
+    lineHeight: 20,
+    color: "#E5E7EB",
+  },
+});

@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   },
   card: {
     display: "flex",
-    backgroundColor: "white",
+    backgroundColor: "#121212",
     height: 120,
     width: "100%",
     flexDirection: "row",
