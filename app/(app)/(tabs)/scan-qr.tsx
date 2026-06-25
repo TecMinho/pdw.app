@@ -190,7 +190,7 @@ export default function Scanner() {
         setScanned(false);
       } catch (error) {
         console.error("Error during issuance: ", error);
-        enqueueDialog(t("scanner.error_while_issuing_credential") + "\n" + error, {
+        enqueueDialog(t("scanner.error_while_issuing_credential"), {
           onDismiss: () => {
             setLoading(false);
             setShowPreApprovedCodeModal(false);
