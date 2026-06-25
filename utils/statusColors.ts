@@ -9,7 +9,7 @@ export const getStatusColor = (status: StatusColors) => {
     case "valid":
       return {
         label: "Valid",
-        text: "#198155",
+        text: "#206030", 
         background: "#ECFCE5",
       };
     case "expired":

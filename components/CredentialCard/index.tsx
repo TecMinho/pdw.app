@@ -45,9 +45,12 @@ export default function CredentialCard({
   onPress,
 }: CredentialCardProps) {
   const st = getStatusColor(status);
+
   return (
     <Card style={styles.card} elevation={4} onPress={onPress}>
-      <View style={styles.iconContainer}>{icon}</View>
+      <View style={styles.iconContainer}> 
+        {icon}
+      </View>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text text60>{title}</Text>
@@ -94,6 +97,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 64,
     height: 64,
+
+    color: "#000000",
+    backgroundColor: "#FFFFFF",
   },
   card: {
     display: "flex",

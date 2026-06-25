@@ -7,6 +7,7 @@ import StorageHelper from "@/helpers/storage";
 import { EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { useLocale } from "@/context/TranslationContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { getStatusColor, StatusColors } from "@/utils/statusColors";
 
 /**
  * Props interface for the CredentialExpandedInfo component
@@ -186,7 +187,7 @@ const subjectItems = [
       ? t("credentials.expired")
       : t("credentials.valid");
 
-  const statusColor = isRevoked ? "#EF4444" : isExpired ? "#F59E0B" : "#00E676";
+  const statusColor = getStatusColor(isRevoked ? "revoked" : isExpired ? "expired" : "valid" as StatusColors);
 
   return (
     <ScrollView
@@ -196,7 +197,7 @@ const subjectItems = [
       <View style={styles.heroCard}>
         <View style={styles.heroGlow} />
         <View style={styles.heroHeader}>
-          <View style={styles.heroIconBox}>
+          <View style={[styles.heroIconBox, { backgroundColor: "#FFFFFF" }]}>
             {credential.logo ? (
               <Image
                 source={{ uri: credential.logo }}
@@ -208,12 +209,12 @@ const subjectItems = [
             )}
           </View>
           <View
-            style={[styles.statusPill, { borderColor: `${statusColor}55` }]}
+            style={[styles.statusPill, { borderColor: `${statusColor.text}`, backgroundColor: `${statusColor.background}` }]}
           >
             <View
-              style={[styles.statusDot, { backgroundColor: statusColor }]}
+              style={[styles.statusDot, { backgroundColor: statusColor.text }]}
             />
-            <Text style={[styles.statusText, { color: statusColor }]}>
+            <Text style={[styles.statusText, { color: statusColor.text }]}>
               {statusText.toUpperCase()}
             </Text>
           </View>
@@ -349,7 +350,7 @@ const styles = StyleSheet.create({
     height: 54,
   },
   statusPill: {
-    minHeight: 40,
+    minHeight: 30,
     borderRadius: 999,
     borderWidth: 1,
     backgroundColor: "rgba(0,230,118,0.12)",

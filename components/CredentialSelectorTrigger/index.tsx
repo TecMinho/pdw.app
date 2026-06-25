@@ -373,7 +373,7 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
         return (
           <View
             key={value._fullPath || key}
-            style={{ marginLeft: level * 15, marginBottom: 5 }}
+            style={{ marginLeft: level * 14, marginBottom: 10 }}
           >
             {isLeaf ? (
               <Checkbox
@@ -385,10 +385,28 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
                   }));
                 }}
                 label={label}
+                color="#00E676"
+                labelStyle={{
+                  color: "#E5E7EB",
+                  fontSize: 15,
+                  fontWeight: "500",
+                }}
+                containerStyle={{
+                  marginBottom: 4,
+                }}
               />
             ) : (
               <>
-                <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: "700",
+                    color: "#71717A",
+                    letterSpacing: 2,
+                    marginBottom: 8,
+                    textTransform: "uppercase",
+                  }}
+                >
                   {label}
                 </Text>
                 {renderNode(value, level + 1)}
@@ -405,9 +423,17 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
   return (
     <>
       <Modal visible={showModal} animationType="slide" transparent={false}>
-        <SafeAreaView style={{ flex: 1 }}>
-          <View flex padding-20>
-            <Text text50 marginB-20>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#050505" }}>
+          <View flex padding-20 style={{ backgroundColor: "#050505" }}>
+            <Text
+              style={{
+                fontSize: 30,
+                fontWeight: "700",
+                color: "#F8FAFC",
+                letterSpacing: -0.2,
+                marginBottom: 20,
+              }}
+            >
               {t("credentials.select_a_credential")}
             </Text>
             {credentials.length === 0 ? (
@@ -418,7 +444,7 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
                   alignItems: "center",
                 }}
               >
-                <ActivityIndicator size="large" color="#0000ff" />
+                <ActivityIndicator size="large" color="#00E676" />
               </View>
             ) : (
               <ScrollView>
@@ -445,7 +471,13 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
             <Button
               marginT-10
               label={t("credentials.cancel")}
-              backgroundColor="#101418"
+              backgroundColor="#111418"
+              labelStyle={{ color: "#E5E7EB", fontWeight: "600" }}
+              style={{
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.08)",
+              }}
               onPress={() => {
                 setShowModal(false);
                 onCancel?.();
@@ -459,19 +491,42 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
         animationType="slide"
         transparent={false}
       >
-        <SafeAreaView style={{ flex: 1 }}>
-          <View flex padding-20>
-            <Text text50 marginB-5>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#050505" }}>
+          <View
+            flex
+            padding-20
+            style={{ backgroundColor: "#050505", paddingTop: 60 }}
+          >
+            <Text
+              style={{
+                fontSize: 30,
+                fontWeight: "700",
+                color: "#F8FAFC",
+                letterSpacing: -0.2,
+                marginBottom: 8,
+              }}
+            >
               {t("credentials.confirm_fields_to_share")}
             </Text>
-            <Text text80 color="#888" marginB-20>
+            <Text
+              style={{
+                fontSize: 15,
+                lineHeight: 22,
+                color: "#9CA3AF",
+                marginBottom: 20,
+              }}
+            >
               {t("credentials.choose_disclosure")}
             </Text>
             <ScrollView
               style={{
-                padding: 15,
-                borderRadius: 25,
+                padding: 14,
+                borderRadius: 22,
+                backgroundColor: "#111418",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.10)",
               }}
+              contentContainerStyle={{ paddingBottom: 8 }}
             >
               {renderFieldCheckboxes(selectedFields)}
             </ScrollView>
@@ -479,9 +534,15 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
             <View marginT-30 row spread>
               <Button
                 label={t("credentials.back")}
-                backgroundColor="#121212"
-                labelStyle={{ color: "#333", fontWeight: "500" }}
-                style={{ flex: 1, marginRight: 10 }}
+                backgroundColor="#111418"
+                labelStyle={{ color: "#E5E7EB", fontWeight: "600" }}
+                style={{
+                  flex: 1,
+                  marginRight: 10,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.08)",
+                }}
                 onPress={() => {
                   setShowFieldsModal(false);
                   setShowModal(true);
@@ -489,9 +550,13 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
               />
               <Button
                 label={t("credentials.confirm")}
-                backgroundColor="#4CAF50"
-                labelStyle={{ color: "#fff", fontWeight: "600" }}
-                style={{ flex: 1, marginLeft: 10 }}
+                backgroundColor="#10C790"
+                labelStyle={{ color: "#0B0D10", fontWeight: "700" }}
+                style={{
+                  flex: 1,
+                  marginLeft: 10,
+                  borderRadius: 16,
+                }}
                 onPress={async () => {
                   const filteredFields = Object.entries(fieldSelection)
                     .filter(([_, isSelected]) => isSelected)
