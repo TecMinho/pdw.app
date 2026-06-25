@@ -144,31 +144,34 @@ export default function CredentialExpandedInfo({
     return String(value);
   };
 
-  const cs: any = credential?.credentialSubject ?? {};
-  const subjectItems = [
-    {
-      key: "credentialSubject.identifier.schemeID",
-      displayValue: toDisplay(cs?.identifier?.schemeID),
-    },
-    {
-      key: "credentialSubject.identifier.value",
-      displayValue: toDisplay(cs?.identifier?.value),
-    },
-    {
-      key: "credentialSubject.achieved.title",
-      displayValue: cs?.achieved?.title
-        ? `${cs.achieved.title}${
-            cs?.achieved?.wasDerivedFrom?.title
-              ? ` (${cs.achieved.wasDerivedFrom.title})`
-              : ""
-          }`
-        : "N/A",
-    },
-    {
-      key: "credentialSubject.achieved.wasDerivedFrom.grade",
-      displayValue: toDisplay(cs?.achieved?.wasDerivedFrom?.grade),
-    },
-  ];
+const cs: any = credential?.credentialSubject ?? {};
+const achieved = Array.isArray(cs?.achieved) ? cs.achieved[0] : cs?.achieved;
+const derivedFrom = Array.isArray(achieved?.wasDerivedFrom)
+  ? achieved.wasDerivedFrom[0]
+  : achieved?.wasDerivedFrom;
+
+const subjectItems = [
+  {
+    key: "credentialSubject.identifier.schemeID",
+    displayValue: toDisplay(cs?.identifier?.schemeID),
+  },
+  {
+    key: "credentialSubject.identifier.value",
+    displayValue: toDisplay(cs?.identifier?.value),
+  },
+  {
+    key: "credentialSubject.achieved.title",
+    displayValue: achieved?.title
+      ? `${achieved.title}${
+          derivedFrom?.title ? ` (${derivedFrom.title})` : ""
+        }`
+      : "N/A",
+  },
+  {
+    key: "credentialSubject.achieved.wasDerivedFrom.grade",
+    displayValue: toDisplay(derivedFrom?.grade),
+  },
+];
 
   const titleText = Array.isArray(credential.type)
     ? credential.type[credential.type.length - 1]
