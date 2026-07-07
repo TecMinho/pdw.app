@@ -785,6 +785,7 @@ export class EBSIConformance {
    * @param did - The DID to create presentation with
    * @param presentationSubmission - The presentation submission structure
    * @param credentials - Array of verifiable credentials to include
+   * @param selectedFields - Array of fields to include in the presentation
    * @returns Promise resolving to the created presentation
    * @throws Error if presentation creation fails
    */
@@ -793,6 +794,7 @@ export class EBSIConformance {
     did: EBSIDID,
     presentationSubmission: any,
     credentials: EBSIVerifiableCredential[],
+    selectedFields: string[] = [],
   ) {
     const response = await fetch(
       `${this.apiBase}/verifier/issue_presentation`,
@@ -804,6 +806,7 @@ export class EBSIConformance {
           presentationSubmission,
           did,
           credentials,
+          selectedFields,
         }),
       },
     );
@@ -956,6 +959,8 @@ export class EBSIConformance {
     did: EBSIDID,
     state: string | undefined,
     deferred = false,
+    format?: string,
+    credentialConfigurationId?: string,
   ) {
     const credentialRes = await fetch(`${this.apiBase}/credentials`, {
       method: "POST",
@@ -973,6 +978,8 @@ export class EBSIConformance {
         did,
         deferred,
         state,
+        format,
+        credential_configuration_id: credentialConfigurationId,
       }),
     });
 
