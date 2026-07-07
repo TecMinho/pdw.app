@@ -1,7 +1,7 @@
 {
   "name": "portuguese-digital-wallet",
   "main": "expo-router/entry",
-  "version": "1.5.2",
+  "version": "1.7.0",
   "scripts": {
     "start:prod": "expo start --no-dev",
     "start": "expo start",
