@@ -415,17 +415,21 @@ export default function Home() {
    * - Navigates back to the main tab
    * - Resets the approval workflow state
    */
-  const onApprove = async () => {
-    if (!data || loading) return;
-    setLoading(true);
-    const credentials = (await StorageHelper.loadCredentials()) || [];
-    credentials.push(data);
-    await StorageHelper.saveCredentials(credentials);
-    await mutate("credentials");
-    router.push("/(app)/(tabs)");
-    setData(undefined);
-    setLoading(false);
-  };
+const onApprove = async () => {
+  if (!data || loading) return;
+
+  setLoading(true);
+
+  const credentials = (await StorageHelper.loadCredentials()) || [];
+  const updatedCredentials = [...credentials, data];
+
+  await StorageHelper.saveCredentials(updatedCredentials);
+  await mutate("credentials");
+
+  router.push("/(app)/(tabs)");
+  setData(undefined);
+  setLoading(false);
+};
 
   /**
    * Handle credential rejection from manual offer processing

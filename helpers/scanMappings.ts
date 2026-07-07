@@ -5,7 +5,7 @@ import {
   EBSIVerifiableCredential,
 } from "@/helpers/ebsi";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { decodeJwt } from "jose";
+import { parseCredentialToken } from "@/helpers/sdJwt";
 
 /**
  * Interface defining the structure for scan mapping handlers
@@ -113,6 +113,17 @@ export const scanMappings: ScanMappings = {
           "urn:ietf:params:oauth:grant-type:pre-authorized_code"
         ];
 
+      const credentialConfigurationId =
+        credentialIssuer.credential_configuration_ids?.[0];
+
+      const credentialFormat =
+        (credentialConfigurationId &&
+          metadata.credential_configurations_supported?.[
+            credentialConfigurationId
+          ]?.format) ??
+        credentialIssuer.credentials?.[0]?.format ??
+        "jwt_vc_json";
+
       if (types.find((type) => type === "CTWalletQualificationCredential")) {
         const credentials = await EBSIConformance.getConformanceCredentials();
 
@@ -157,6 +168,9 @@ export const scanMappings: ScanMappings = {
           metadata.deferred_credential_endpoint,
           did,
           state,
+          false,
+          credentialFormat,
+          credentialConfigurationId,
         );
 
         if (!credential) {
@@ -164,7 +178,7 @@ export const scanMappings: ScanMappings = {
         }
 
         const rawCredential = credential.credential;
-        const decodedPayload: any = decodeJwt(rawCredential);
+        const decodedPayload = await parseCredentialToken(rawCredential);
 
         return EBSIServices.getVerifiableCredential(
           decodedPayload,
@@ -223,6 +237,8 @@ export const scanMappings: ScanMappings = {
           did,
           state,
           isDeferred,
+          credentialFormat,
+          credentialConfigurationId,
         );
 
         if (!credential) {
@@ -230,16 +246,20 @@ export const scanMappings: ScanMappings = {
         }
 
         const rawCredential = credential.credential;
-        const decodedPayload: any = decodeJwt(rawCredential);
-        const finalFilterTypes = decodedPayload?.vc?.type.filter(
+        const decodedPayload = await parseCredentialToken(rawCredential);
+        const finalFilterTypes = (decodedPayload?.vc?.type ?? []).filter(
           (type: any) =>
             !["VerifiableCredential", "VerifiableAttestation"].includes(type),
         );
 
-        const displayCredential = metadata.credentials_supported?.find(
-          (item: any) =>
-            item.types.some((type: string) => finalFilterTypes.includes(type)),
-        );
+        const displayCredential =
+          (credentialConfigurationId &&
+            metadata.credential_configurations_supported?.[
+              credentialConfigurationId
+            ]) ||
+          metadata.credentials_supported?.find((item: any) =>
+            item.types?.some((type: string) => finalFilterTypes.includes(type)),
+          );
 
         let credentialName = "";
         let credentialLogo = "";
@@ -320,6 +340,8 @@ export const scanMappings: ScanMappings = {
           did,
           state,
           isDeferred,
+          credentialFormat,
+          credentialConfigurationId,
         );
 
         if (!credential) {
@@ -327,19 +349,23 @@ export const scanMappings: ScanMappings = {
         }
 
         const rawCredential = credential.credential;
-        const decodedPayload: any = decodeJwt(rawCredential);
+        const decodedPayload = await parseCredentialToken(rawCredential);
 
         await AsyncStorage.removeItem("code");
 
-        const finalFilterTypes = decodedPayload?.vc?.type.filter(
+        const finalFilterTypes = (decodedPayload?.vc?.type ?? []).filter(
           (type: any) =>
             !["VerifiableCredential", "VerifiableAttestation"].includes(type),
         );
 
-        const displayCredential = metadata.credentials_supported?.find(
-          (item: any) =>
-            item.types.some((type: string) => finalFilterTypes.includes(type)),
-        );
+        const displayCredential =
+          (credentialConfigurationId &&
+            metadata.credential_configurations_supported?.[
+              credentialConfigurationId
+            ]) ||
+          metadata.credentials_supported?.find((item: any) =>
+            item.types?.some((type: string) => finalFilterTypes.includes(type)),
+          );
 
         let credentialName = "";
         let credentialLogo = "";
@@ -474,6 +500,7 @@ export const scanMappings: ScanMappings = {
         did,
         presentationSubmission,
         credentials,
+        selectedFields
       );
     },
   },
