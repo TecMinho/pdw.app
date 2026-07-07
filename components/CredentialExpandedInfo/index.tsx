@@ -162,11 +162,9 @@ const subjectItems = [
   },
   {
     key: "credentialSubject.achieved.title",
-    displayValue: achieved?.title
-      ? `${achieved.title}${
-          derivedFrom?.title ? ` (${derivedFrom.title})` : ""
-        }`
-      : "N/A",
+    displayValue: achieved?.title 
+      ? `${achieved.title}${derivedFrom?.title ? ` (${derivedFrom.title})` : "" }` 
+      : (derivedFrom?.title ? derivedFrom?.title : "N/A"),
   },
   {
     key: "credentialSubject.achieved.wasDerivedFrom.grade",
