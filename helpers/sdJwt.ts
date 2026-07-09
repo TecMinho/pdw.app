@@ -1,13 +1,21 @@
 import * as Crypto from "expo-crypto";
 import { decodeJwt } from "jose";
 
-function decodeDisclosure(disclosure: string): [string, string, unknown] {
-  const base64 = disclosure.replace(/-/g, "+").replace(/_/g, "/");
+function decodeBase64UrlUtf8(value: string): string {
+  const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
   const padded = base64.padEnd(
     base64.length + ((4 - (base64.length % 4)) % 4),
     "=",
   );
-  const json = atob(padded);
+
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+
+  return new TextDecoder("utf-8").decode(bytes);
+}
+
+function decodeDisclosure(disclosure: string): [string, string, unknown] {
+  const json = decodeBase64UrlUtf8(disclosure);
   return JSON.parse(json);
 }
 
