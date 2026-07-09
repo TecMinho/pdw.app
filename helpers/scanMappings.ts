@@ -38,19 +38,26 @@ type ScanMappings = {
  * @returns The decoded JWT payload as a JavaScript object
  * @throws Error if JWT format is invalid
  */
+function decodeBase64UrlUtf8(value: string): string {
+  const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64.padEnd(
+    base64.length + ((4 - (base64.length % 4)) % 4),
+    "=",
+  );
+
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+
+  return new TextDecoder("utf-8").decode(bytes);
+}
+
 function decodeJwtPayload(jwt: string): any {
   const parts = jwt.split(".");
   if (parts.length !== 3) {
     throw new Error("JWT malformado");
   }
 
-  const base64Url = parts[1];
-  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = base64.padEnd(
-    base64.length + ((4 - (base64.length % 4)) % 4),
-    "=",
-  );
-  const jsonPayload = atob(padded);
+  const jsonPayload = decodeBase64UrlUtf8(parts[1]);
 
   return JSON.parse(jsonPayload);
 }

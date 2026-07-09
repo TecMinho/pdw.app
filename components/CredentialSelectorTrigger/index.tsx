@@ -70,22 +70,29 @@ const CredentialSelectorTrigger: React.FC<CredentialSelectorTriggerProps> = ({
    * @returns Parsed payload object
    * @throws Error if JWT format is invalid
    */
-  function decodeJwtPayload(jwt: string): any {
-    const parts = jwt.split(".");
-    if (parts.length !== 3) {
-      throw new Error("Malformed JWT");
-    }
+ function decodeBase64UrlUtf8(value: string): string {
+   const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
+   const padded = base64.padEnd(
+     base64.length + ((4 - (base64.length % 4)) % 4),
+     "=",
+   );
 
-    const base64Url = parts[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64.padEnd(
-      base64.length + ((4 - (base64.length % 4)) % 4),
-      "=",
-    );
-    const jsonPayload = atob(padded);
+   const binary = atob(padded);
+   const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
 
-    return JSON.parse(jsonPayload);
-  }
+   return new TextDecoder("utf-8").decode(bytes);
+ }
+
+ function decodeJwtPayload(jwt: string): any {
+   const parts = jwt.split(".");
+   if (parts.length !== 3) {
+     throw new Error("Malformed JWT");
+   }
+
+   const jsonPayload = decodeBase64UrlUtf8(parts[1]);
+
+   return JSON.parse(jsonPayload);
+ }
 
   /**
    * Initial user prompt effect
