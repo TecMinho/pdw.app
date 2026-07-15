@@ -1,7 +1,16 @@
 {
   "name": "portuguese-digital-wallet",
   "main": "expo-router/entry",
-  "version": "1.7.1",
+  "license": "Apache-2.0",
+  "version": "1.7.2",
+  "authors": [
+      {
+          "name": "TecMinho",
+          "email": "ti@tecminho.uminho.pt",
+          "homepage": "https://www.tecminho.uminho.pt",
+          "role": "Developer"
+      }
+  ],
   "scripts": {
     "start:prod": "expo start --no-dev",
     "start": "expo start",

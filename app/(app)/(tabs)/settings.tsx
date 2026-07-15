@@ -321,7 +321,7 @@ const dangerRows: typeof settingsItems = [settingsItems[1], settingsItems[2]];
             ))}
           </View>
 
-          <View style={styles.footerLogos}>
+          <View style={[styles.footerLogos, {marginTop: 60}]}>
             <Pressable
               onPress={() =>
                 Linking.openURL(
@@ -352,6 +352,26 @@ const dangerRows: typeof settingsItems = [settingsItems[1], settingsItems[2]];
                 tintColor="#FFFFFF"
                 style={styles.logo}
                 alt="Logo TecMinho"
+              />
+            </Pressable>
+          </View>
+          
+          <View style={styles.footerLogos}>
+            <Pressable
+              onPress={async () =>
+                await Linking.openURL("https://www.recuperarportugal.gov.pt")
+              }              
+              style={({ pressed }) => [
+                styles.logoBtn,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Image
+                source={require("@/assets/images/logos/cofinanciamento_white.png")}
+                tintColor="#FFFFFF"
+                // style={{ width: "100%", height: 80, resizeMode: "contain" }}
+                style={[styles.logo, {width: 320, height: 50}]}
+                alt="Barra de assinaturas PRR"
               />
             </Pressable>
           </View>

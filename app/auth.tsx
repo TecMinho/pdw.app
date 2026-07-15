@@ -119,6 +119,26 @@ export default function AuthScreen() {
             />
           </Pressable>
         </View>
+
+        <View style={styles.footerRow}>
+          <Pressable
+            onPress={async () =>
+              await Linking.openURL("https://www.recuperarportugal.gov.pt")
+            }
+            style={({ pressed }) => [
+              styles.logoWrap,
+              { flexGrow: true,  display: "flex", alignItems: "center", opacity: pressed ? 0.7 : 1 },
+            ]}
+          >
+            <Image
+              source={require("@/assets/images/logos/cofinanciamento_white.png")}
+              tintColor="#FFFFFF"
+              // style={{ width: "100%", height: 80, resizeMode: "contain" }}
+              style={[styles.footerLogoFull, {width: 320, height: 80}]}
+              alt="Barra de assinaturas PRR"
+            />
+          </Pressable>
+        </View>
       </SafeAreaView>
     </View>
   );
@@ -243,6 +263,12 @@ const styles = StyleSheet.create({
   footerLogo: {
     width: 84,
     height: 48,
+    opacity: 0.9,
+    resizeMode: "contain",
+  },
+  footerLogoFull: {
+    width: "100%",
+    // height: 48,
     opacity: 0.9,
     resizeMode: "contain",
   },

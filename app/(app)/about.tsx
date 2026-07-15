@@ -153,8 +153,8 @@ export default function About() {
             ]}
           >
             <Image
-              source={require("@/assets/images/logos/cofinanciamento.png")}
-              // tintColor={Colors.current.image.getTintColor()}
+              source={require("@/assets/images/logos/cofinanciamento_white.png")}
+              tintColor={Colors.dark.image.getTintColor()}
               style={{ width: "100%", height: 80, resizeMode: "contain" }}
               alt="Barra de assinaturas PRR"
             />
