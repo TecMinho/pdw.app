@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useFocusEffect, useIsFocused } from "@react-navigation/native";
+import { useFocusEffect, useIsFocused } from "expo-router/react-navigation";
 import { Modal, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Camera, CameraView } from "expo-camera";
