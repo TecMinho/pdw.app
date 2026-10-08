@@ -1,10 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { EBSIDID, EBSILogin, EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { parseCredentialToken } from "@/helpers/sdJwt";
+import { getCredentialTemplateId } from "@/utils/credentialTemplates";
 
 /**
  * StorageHelper Class
- * 
+ *
  * A static utility class that provides methods for storing and retrieving
  * EBSI-related data in the device's local storage. All methods are static
  * to allow direct usage without instantiation.
@@ -137,7 +138,11 @@ export default class StorageHelper {
         const rawJwt = credential?.jwt;
 
         if (!rawJwt || !rawJwt.includes("~")) {
-          return credential.toJson();
+          return {
+            ...credential.toJson(),
+            templateId:
+              credential.templateId ?? getCredentialTemplateId(credential),
+          };
         }
 
         try {
@@ -150,10 +155,16 @@ export default class StorageHelper {
             name: credential.name,
             logo: credential.logo,
             backgroundImage: credential.backgroundImage,
+            templateId:
+              credential.templateId ?? getCredentialTemplateId(credential),
           }).toJson();
         } catch (error) {
           console.error("Error normalizing SD-JWT before saving:", error);
-          return credential.toJson();
+          return {
+            ...credential.toJson(),
+            templateId:
+              credential.templateId ?? getCredentialTemplateId(credential),
+          };
         }
       }),
     );
@@ -192,7 +203,11 @@ export default class StorageHelper {
         const rawJwt = certificate?.jwt;
 
         if (!rawJwt || !rawJwt.includes("~")) {
-          return EBSIVerifiableCredential.fromJson(certificate);
+          return EBSIVerifiableCredential.fromJson({
+            ...certificate,
+            templateId:
+              certificate.templateId ?? getCredentialTemplateId(certificate),
+          });
         }
 
         try {
@@ -205,10 +220,16 @@ export default class StorageHelper {
             name: certificate.name,
             logo: certificate.logo,
             backgroundImage: certificate.backgroundImage,
+            templateId:
+              certificate.templateId ?? getCredentialTemplateId(certificate),
           });
         } catch (error) {
           console.error("Error re-parsing stored SD-JWT credential:", error);
-          return EBSIVerifiableCredential.fromJson(certificate);
+          return EBSIVerifiableCredential.fromJson({
+            ...certificate,
+            templateId:
+              certificate.templateId ?? getCredentialTemplateId(certificate),
+          });
         }
       }),
     );

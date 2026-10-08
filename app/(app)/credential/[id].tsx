@@ -9,11 +9,18 @@ import {
   StyleSheet,
   Modal,
   ScrollView,
-} from "react-native";import Ionicons from "@expo/vector-icons/Ionicons";
+  InteractionManager,
+  ActivityIndicator,
+} from "react-native";
+import { WebView } from "react-native-webview";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import SimpleLineIcon from "react-native-vector-icons/SimpleLineIcons";
 import { useState, useEffect } from "react";
 import { useTextDialog } from "@/providers/textDialogProvider";
-import { generateAndSharePDF } from "@/utils/pdfGenerator";
+import {
+  buildCredentialPdfPreviewHtml,
+  generateAndSharePDF,
+} from "@/utils/pdfGenerator";
 import { useLocale } from "@/context/TranslationContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -36,6 +43,11 @@ export default function CredentialPage() {
   const [isExpired, setIsExpired] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isFullInfoOpen, setIsFullInfoOpen] = useState(false);
+  const [isPdfPreviewOpen, setIsPdfPreviewOpen] = useState(false);
+  const [pdfPreviewHtml, setPdfPreviewHtml] = useState("");
+  const [pdfPreviewCredential, setPdfPreviewCredential] = useState<any>();
+  const [isPdfExporting, setIsPdfExporting] = useState(false);
+  const [isPdfExportPending, setIsPdfExportPending] = useState(false);
   const { enqueueDialog } = useTextDialog();
 
   /**
@@ -174,9 +186,18 @@ export default function CredentialPage() {
                 styles.sheetItem,
                 pressed && styles.sheetItemPressed,
               ]}
-              onPress={async () => {
+              onPress={() => {
                 setIsSheetOpen(false);
-                await generateAndSharePDF(credential);
+                // Wait for the action sheet to finish closing before opening
+                // the in-app PDF preview.
+                InteractionManager.runAfterInteractions(async () => {
+                  if (!credential) return;
+                  setPdfPreviewCredential(credential);
+                  setPdfPreviewHtml(
+                    await buildCredentialPdfPreviewHtml(credential),
+                  );
+                  setIsPdfPreviewOpen(true);
+                });
               }}
             >
               <View style={styles.sheetItemLeft}>
@@ -257,6 +278,74 @@ export default function CredentialPage() {
         </View>
       </Modal>
       <Modal
+        visible={isPdfPreviewOpen}
+        animationType="slide"
+        onDismiss={() => {
+          if (!isPdfExportPending || !pdfPreviewCredential) return;
+          setIsPdfExportPending(false);
+          setIsPdfExporting(true);
+          void generateAndSharePDF(pdfPreviewCredential).finally(() => {
+            setIsPdfExporting(false);
+          });
+        }}
+        onRequestClose={() => setIsPdfPreviewOpen(false)}
+      >
+        <SafeAreaView style={styles.pdfPreviewSafe}>
+          <View style={styles.pdfPreviewHeader}>
+            <Text style={styles.pdfPreviewTitle}>
+              {t("credentials.pdf_preview")}
+            </Text>
+            <Pressable
+              onPress={() => setIsPdfPreviewOpen(false)}
+              style={styles.pdfPreviewClose}
+            >
+              <Ionicons name="close" size={22} color="#F8FAFC" />
+            </Pressable>
+          </View>
+
+          <View style={styles.pdfPreviewBody}>
+            <WebView
+              originWhitelist={["*"]}
+              source={{ html: pdfPreviewHtml }}
+              style={styles.pdfPreviewWebView}
+              javaScriptEnabled={false}
+              automaticallyAdjustContentInsets={false}
+            />
+          </View>
+
+          <View style={styles.pdfPreviewActions}>
+            <Pressable
+              style={styles.pdfPreviewCancel}
+              onPress={() => setIsPdfPreviewOpen(false)}
+              disabled={isPdfExporting}
+            >
+              <Text style={styles.pdfPreviewCancelText}>
+                {t("main.cancel")}
+              </Text>
+            </Pressable>
+            <Pressable
+              style={styles.pdfPreviewExport}
+              disabled={isPdfExporting || !pdfPreviewCredential}
+              onPress={() => {
+                setIsPdfExportPending(true);
+                setIsPdfPreviewOpen(false);
+              }}
+            >
+              {isPdfExporting ? (
+                <ActivityIndicator color="#061018" />
+              ) : (
+                <>
+                  <Ionicons name="share-outline" size={18} color="#061018" />
+                  <Text style={styles.pdfPreviewExportText}>
+                    {t("credentials.export_pdf")}
+                  </Text>
+                </>
+              )}
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      </Modal>
+      <Modal
         visible={isFullInfoOpen}
         transparent
         animationType="fade"
@@ -333,7 +422,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   sheetBackdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(0,0,0,0.52)",
   },
   sheetWrap: {
@@ -447,5 +536,78 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
     color: "#E5E7EB",
+  },
+  pdfPreviewSafe: {
+    flex: 1,
+    backgroundColor: "#06080C",
+  },
+  pdfPreviewHeader: {
+    height: 58,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.10)",
+  },
+  pdfPreviewTitle: {
+    color: "#F8FAFC",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  pdfPreviewClose: {
+    width: 38,
+    height: 38,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 12,
+    backgroundColor: "#101418",
+  },
+  pdfPreviewBody: {
+    flex: 1,
+    margin: 12,
+    overflow: "hidden",
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+  },
+  pdfPreviewWebView: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  pdfPreviewActions: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
+  },
+  pdfPreviewCancel: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.14)",
+  },
+  pdfPreviewCancelText: {
+    color: "#CBD5E1",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  pdfPreviewExport: {
+    flex: 1.4,
+    height: 48,
+    borderRadius: 12,
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#00E676",
+  },
+  pdfPreviewExportText: {
+    color: "#061018",
+    fontSize: 15,
+    fontWeight: "700",
   },
 });

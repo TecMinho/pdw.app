@@ -2,6 +2,10 @@ import * as Crypto from "expo-crypto";
 import StorageHelper from "@/helpers/storage";
 import { getGlobalCredentialSelector } from "@/utils/credentialSelectorBridge";
 import { decodeJwt } from "jose";
+import {
+  CredentialIssuer,
+  CredentialTemplateId,
+} from "@/utils/credentialTemplates";
 
 /**
  * EBSI Login Class
@@ -202,7 +206,7 @@ export class EBSIDID {
  */
 export class EBSIVerifiableCredential {
   id: string;
-  issuer: string;
+  issuer: CredentialIssuer;
   credentialSubject: Record<string, any>;
   issuanceDate: string;
   expirationDate: string;
@@ -216,6 +220,7 @@ export class EBSIVerifiableCredential {
   name: string | undefined;
   logo: string | undefined;
   backgroundImage: string | undefined;
+  templateId: CredentialTemplateId | undefined;
 
   /**
    * Creates a new EBSIVerifiableCredential instance
@@ -234,7 +239,7 @@ export class EBSIVerifiableCredential {
    */
   constructor(
     id: string,
-    issuer: string,
+    issuer: CredentialIssuer,
     credentialSubject: Record<string, any>,
     issuanceDate: string,
     expirationDate: string,
@@ -248,6 +253,7 @@ export class EBSIVerifiableCredential {
     name?: string,
     logo?: string,
     backgroundImage?: string,
+    templateId?: CredentialTemplateId,
   ) {
     this.id = id;
     this.issuer = issuer;
@@ -264,6 +270,7 @@ export class EBSIVerifiableCredential {
     this.name = name;
     this.logo = logo;
     this.backgroundImage = backgroundImage;
+    this.templateId = templateId;
   }
 
   /**
@@ -289,6 +296,7 @@ export class EBSIVerifiableCredential {
       json["name"],
       json["logo"],
       json["backgroundImage"],
+      json["templateId"],
     );
   }
 
@@ -314,6 +322,7 @@ export class EBSIVerifiableCredential {
       logo: this.logo,
       name: this.name,
       backgroundImage: this.backgroundImage,
+      templateId: this.templateId,
     };
   }
 }

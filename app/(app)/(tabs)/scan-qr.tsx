@@ -1,15 +1,9 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useFocusEffect, useIsFocused } from "@react-navigation/native";
+import { useFocusEffect, useIsFocused } from "expo-router";
 import { Modal, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Camera, CameraView } from "expo-camera";
-import {
-  Colors,
-  FloatingButton,
-  LoaderScreen,
-  Text,
-  View,
-} from "react-native-ui-lib";
+import { Button, Colors, LoaderScreen, Text, View } from "react-native-ui-lib";
 import QrScannerLayout from "@/components/QrScannerLayout";
 import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
 import CredentialSelectorTrigger from "@/components/CredentialSelectorTrigger";
@@ -359,24 +353,24 @@ export default function Scanner() {
       <Modal visible={!!data}>
         <SafeAreaView style={{ flex: 1, backgroundColor: "#06080C" }}>
           <CredentialExpandedInfo data={data} status={""} />
-          <FloatingButton
-            visible
-            buttonLayout={"Horizontal"}
-            button={{
-              label: t("scanner.accept"),
-              disabled: loading,
-              onPress: onApprove,
-              backgroundColor: "#10C790",
-            }}
-            secondaryButton={{
-              outline: false,
-              disabled: loading,
-              onPress: onReject,
-              color: "#E5E7EB",
-              backgroundColor: "#101418",
-              label: t("scanner.reject"),
-            }}
-          />
+          <View style={styles.credentialActions}>
+            <Button
+              label={t("scanner.reject")}
+              disabled={loading}
+              onPress={onReject}
+              backgroundColor="#101418"
+              labelStyle={styles.rejectLabel}
+              style={[styles.credentialActionButton, styles.rejectButton]}
+            />
+            <Button
+              label={t("scanner.accept")}
+              disabled={loading}
+              onPress={onApprove}
+              backgroundColor="#10C790"
+              labelStyle={styles.acceptLabel}
+              style={[styles.credentialActionButton, styles.acceptButton]}
+            />
+          </View>
         </SafeAreaView>
       </Modal>
       {loading && (
@@ -614,6 +608,35 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#D1D5DB",
     fontWeight: "600",
+  },
+  credentialActions: {
+    flexDirection: "row",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    backgroundColor: "#06080C",
+  },
+  credentialActionButton: {
+    flex: 1,
+    minHeight: 52,
+    borderRadius: 16,
+    marginHorizontal: 0,
+  },
+  rejectButton: {
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  acceptButton: {
+    borderWidth: 0,
+  },
+  rejectLabel: {
+    color: "#E5E7EB",
+    fontWeight: "700",
+  },
+  acceptLabel: {
+    color: "#0B0D10",
+    fontWeight: "700",
   },
   title: {
     fontSize: 24,
