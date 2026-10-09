@@ -348,6 +348,7 @@ export class EBSIServices {
     name?: string,
     logo?: string,
     backgroundImage?: string,
+    claimsMetadata?: Record<string, unknown>,
   ): Promise<EBSIVerifiableCredential | null> {
     try {
       const vcPayload = credentialOffer.vc;
@@ -358,6 +359,7 @@ export class EBSIServices {
         logo,
         name,
         backgroundImage,
+        claimsMetadata,
       });
       if (!credential) {
         throw new Error("Error creating verifiable credential");

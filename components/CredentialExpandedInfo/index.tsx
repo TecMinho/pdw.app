@@ -9,6 +9,10 @@ import { EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { useLocale } from "@/context/TranslationContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { getStatusColor, StatusColors } from "@/utils/statusColors";
+import {
+  flattenCredentialSubject,
+  formatCredentialValue,
+} from "@/helpers/credentialDisplay";
 
 /**
  * Props interface for the CredentialExpandedInfo component
@@ -30,7 +34,7 @@ export default function CredentialExpandedInfo({
   style,
 }: CredentialExpandedInfoProps) {
   const { id } = useLocalSearchParams();
-  const { t } = useLocale();
+  const { t, currentLanguage } = useLocale();
   const [credentialData, setData] = useState<EBSIVerifiableCredential | null>(
     null,
   );
@@ -115,17 +119,7 @@ export default function CredentialExpandedInfo({
         !["@context", "type", "id", "proof"].some((k) => key.startsWith(k)),
     )
     .map(({ key, value }) => {
-      let displayValue: string;
-
-      if (value === null || value === undefined) {
-        displayValue = "N/A";
-      } else if (typeof value === "object") {
-        displayValue = JSON.stringify(value, null, 2);
-      } else {
-        displayValue = String(value);
-      }
-
-      return { key, displayValue };
+      return { key, displayValue: formatCredentialValue(value) };
     })
     .filter((item) => !["logo", "name", "backgroundImage"].includes(item.key));
 
@@ -136,16 +130,18 @@ export default function CredentialExpandedInfo({
   const expiresValue =
     credential.validUntil || credential.expirationDate || "N/A";
 
-  const formatMaybeDate = (value: string) => {
-    if (!value || value === "N/A") return "N/A";
+  const formatMaybeDate = (value: unknown) => {
+    if (
+      (typeof value !== "string" && typeof value !== "number") ||
+      value === "" ||
+      value === "N/A"
+    ) {
+      return formatCredentialValue(value);
+    }
     const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString();
-  };
-
-  const toDisplay = (value: unknown) => {
-    if (value === null || value === undefined || value === "") return "N/A";
-    if (typeof value === "object") return JSON.stringify(value);
-    return String(value);
+    return Number.isNaN(parsed.getTime())
+      ? formatCredentialValue(value)
+      : parsed.toLocaleDateString();
   };
 
   const cs: any = credential?.credentialSubject ?? {};
@@ -179,10 +175,15 @@ export default function CredentialExpandedInfo({
 
   const titleText = Array.isArray(credential.type)
     ? credential.type[credential.type.length - 1]
-    : _.startCase(credential.type || t("credentials.verifiable_credential"));
+    : credential.type || t("credentials.verifiable_credential");
+  const titleText =
+    typeof rawTitle === "string"
+      ? _.startCase(formatCredentialValue(rawTitle))
+      : formatCredentialValue(rawTitle);
 
-  const subtitleText =
-    credential.name || t("credentials.verifiable_credential");
+  const subtitleText = formatCredentialValue(
+    credential.name || t("credentials.verifiable_credential"),
+  );
 
   const statusText = isRevoked
     ? t("credentials.revoked")
@@ -291,14 +292,14 @@ export default function CredentialExpandedInfo({
         <View style={styles.sectionPanel}>
           {subjectItems.map((item, idx) => (
             <View
-              key={item.key}
+              key={item.path}
               style={[
                 styles.fieldRow,
                 idx < subjectItems.length - 1 && styles.fieldBorder,
               ]}
             >
               <Text style={styles.fieldLabel}>
-                {_.startCase(item.key.split(".").slice(-1).join(""))}
+                {item.label}
               </Text>
               <Text
                 style={[
