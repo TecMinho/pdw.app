@@ -150,6 +150,7 @@ export default class StorageHelper {
             name: credential.name,
             logo: credential.logo,
             backgroundImage: credential.backgroundImage,
+            claimsMetadata: credential.claimsMetadata,
           }).toJson();
         } catch (error) {
           console.error("Error normalizing SD-JWT before saving:", error);
@@ -205,6 +206,7 @@ export default class StorageHelper {
             name: certificate.name,
             logo: certificate.logo,
             backgroundImage: certificate.backgroundImage,
+            claimsMetadata: certificate.claimsMetadata,
           });
         } catch (error) {
           console.error("Error re-parsing stored SD-JWT credential:", error);
