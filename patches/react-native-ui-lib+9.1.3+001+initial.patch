@@ -1,0 +1,42 @@
+diff --git a/node_modules/react-native-ui-lib/lib/android/build.gradle b/node_modules/react-native-ui-lib/lib/android/build.gradle
+index 543abd2..1979f65 100644
+--- a/node_modules/react-native-ui-lib/lib/android/build.gradle
++++ b/node_modules/react-native-ui-lib/lib/android/build.gradle
+@@ -30,3 +30,9 @@ android {
+ dependencies {
+     implementation 'com.facebook.react:react-native:+'
+ }
++
++afterEvaluate {
++    tasks.matching { it.name == "packageReleaseResources" }.all { task ->
++        task.dependsOn(":uilib-native:generateReleaseResValues")
++    }
++}
+diff --git a/node_modules/react-native-ui-lib/lib/react-native.config.js b/node_modules/react-native-ui-lib/lib/react-native.config.js
+index 955d9de..25e6490 100644
+--- a/node_modules/react-native-ui-lib/lib/react-native.config.js
++++ b/node_modules/react-native-ui-lib/lib/react-native.config.js
+@@ -1,20 +1,6 @@
+ module.exports = {
+-  dependency: {
+-    platforms: {
+-      /* TODO: Once we upgrade to RN69 we should try using podspecPath again, for now I copied ReactNativeUiLib.podspec file to the root - it seems to work
+-      I copied it, because we need it for both the main uilib and the uilib-native package */
+-      // ios: {
+-      //   podspecPath: './uilib-native/ReactNativeUiLib.podspec'
+-      // },
+-      android: {
+-        sourceDir: './android/',
+-        packageImportPath: `import com.wix.reactnativeuilib.dynamicfont.DynamicFontPackage;
+-import com.wix.reactnativeuilib.highlighterview.HighlighterViewPackage;
+-import com.wix.reactnativeuilib.keyboardinput.KeyboardInputPackage;`,
+-        packageInstance: `new DynamicFontPackage(),
+-      new HighlighterViewPackage(),
+-      new KeyboardInputPackage(getApplication())`
+-      }
+-    }
++  platforms: {
++    ios: null,
++    android: null
+   }
+ };

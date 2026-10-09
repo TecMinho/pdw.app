@@ -2,17 +2,11 @@
   "expo": {
     "name": "Portuguese Digital Wallet",
     "slug": "portuguese-digital-wallet",
-    "newArchEnabled": true,
-    "version": "1.7.2",
+    "version": "1.7.3",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon.png",
     "scheme": "portuguese-digital-wallet",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -24,11 +18,8 @@
         "ITSAppUsesNonExemptEncryption": false
       }
     },
-    "androidNavigationBar": {
-      "backgroundColor": "#ffffff"
-    },
     "android": {
-      "versionCode": 31,
+      "versionCode": 32,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -46,6 +37,14 @@
     },
     "plugins": [
       [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera"
@@ -57,6 +56,14 @@
       "expo-web-browser",
       "expo-localization",
       [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": true,
+          "hidden": false,
+          "style": "light"
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "android": {
@@ -64,9 +71,15 @@
             "buildToolsVersion": "36.0.0",
             "compileSdkVersion": 36,
             "targetSdkVersion": 36
+          },
+          "ios": {
+            "enableSceneSupport": true
           }
         }
-      ]
+      ],
+      "patch-project",
+      "./withUiLibFix",
+      "./withAndroidReleaseSign"
     ],
     "experiments": {
       "typedRoutes": true
