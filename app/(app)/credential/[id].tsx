@@ -11,6 +11,7 @@ import {
   ScrollView,
   InteractionManager,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -20,9 +21,11 @@ import { useTextDialog } from "@/providers/textDialogProvider";
 import {
   buildCredentialPdfPreviewHtml,
   generateAndSharePDF,
+  type PdfLabels,
 } from "@/utils/pdfGenerator";
 import { useLocale } from "@/context/TranslationContext";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { shouldExportAfterPreviewClose } from "@/utils/pdfExportFlow";
 
 /**
  * Credential Detail Page Component
@@ -32,7 +35,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
  */
 export default function CredentialPage() {
   const router = useRouter();
-  const { t } = useLocale();
+  const { t, currentLanguage } = useLocale();
   const { id } = useLocalSearchParams();
   const { data: credentials, isLoading } = useSWR(`credentials`, () =>
     StorageHelper.loadCredentials(),
@@ -46,9 +49,50 @@ export default function CredentialPage() {
   const [isPdfPreviewOpen, setIsPdfPreviewOpen] = useState(false);
   const [pdfPreviewHtml, setPdfPreviewHtml] = useState("");
   const [pdfPreviewCredential, setPdfPreviewCredential] = useState<any>();
+  const [pdfPreviewLabels, setPdfPreviewLabels] = useState<PdfLabels>();
   const [isPdfExporting, setIsPdfExporting] = useState(false);
   const [isPdfExportPending, setIsPdfExportPending] = useState(false);
   const { enqueueDialog } = useTextDialog();
+
+  const getPdfLabels = (): PdfLabels => ({
+    eyebrow: t("credentials.pdf_eyebrow"),
+    issuedTo: t("credentials.pdf_issued_to"),
+    intro: t("credentials.pdf_intro"),
+    holder: t("credentials.pdf_holder"),
+    course: t("credentials.course"),
+    classification: t("credentials.classification"),
+    issued: t("credentials.pdf_issued"),
+    validUntil: t("credentials.pdf_valid_until"),
+    footer: t("credentials.pdf_footer"),
+    fallbackTitle: t("credentials.verifiable_credential"),
+    shareTitle: t("credentials.pdf_share_title"),
+    missingCredentialTitle: t("credentials.pdf_missing_title"),
+    missingCredentialMessage: t("credentials.pdf_missing_message"),
+    cacheUnavailableMessage: t("credentials.pdf_cache_unavailable"),
+    sharingUnavailableMessage: t("credentials.pdf_sharing_unavailable"),
+    errorTitle: t("credentials.pdf_error_title"),
+    unknownErrorMessage: t("credentials.pdf_unknown_error"),
+    createdAtLabel: t("credentials.pdf_created_at"),
+    createdAt: new Date(),
+    dateLocale: currentLanguage === "pt" ? "pt-PT" : "en-GB",
+    fieldLabels: {
+      courselocation: t("credentials.pdf_course_location"),
+      name: t("credentials.pdf_holder"),
+      fullname: t("credentials.pdf_holder"),
+    },
+  });
+
+  const exportPreviewPdf = () => {
+    if (!pdfPreviewCredential) return;
+    setIsPdfExportPending(false);
+    setIsPdfExporting(true);
+    void generateAndSharePDF(
+      pdfPreviewCredential,
+      pdfPreviewLabels ?? getPdfLabels(),
+    ).finally(() => {
+      setIsPdfExporting(false);
+    });
+  };
 
   /**
    * Real-time credential revocation status monitoring
@@ -192,9 +236,11 @@ export default function CredentialPage() {
                 // the in-app PDF preview.
                 InteractionManager.runAfterInteractions(async () => {
                   if (!credential) return;
+                  const labels = getPdfLabels();
                   setPdfPreviewCredential(credential);
+                  setPdfPreviewLabels(labels);
                   setPdfPreviewHtml(
-                    await buildCredentialPdfPreviewHtml(credential),
+                    await buildCredentialPdfPreviewHtml(credential, labels),
                   );
                   setIsPdfPreviewOpen(true);
                 });
@@ -281,12 +327,9 @@ export default function CredentialPage() {
         visible={isPdfPreviewOpen}
         animationType="slide"
         onDismiss={() => {
+          if (shouldExportAfterPreviewClose(Platform.OS)) return;
           if (!isPdfExportPending || !pdfPreviewCredential) return;
-          setIsPdfExportPending(false);
-          setIsPdfExporting(true);
-          void generateAndSharePDF(pdfPreviewCredential).finally(() => {
-            setIsPdfExporting(false);
-          });
+          exportPreviewPdf();
         }}
         onRequestClose={() => setIsPdfPreviewOpen(false)}
       >
@@ -329,6 +372,9 @@ export default function CredentialPage() {
               onPress={() => {
                 setIsPdfExportPending(true);
                 setIsPdfPreviewOpen(false);
+                if (shouldExportAfterPreviewClose(Platform.OS)) {
+                  InteractionManager.runAfterInteractions(exportPreviewPdf);
+                }
               }}
             >
               {isPdfExporting ? (

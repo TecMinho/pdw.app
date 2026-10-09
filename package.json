@@ -19,7 +19,7 @@
     "android:bundle:test": "expo run:android --variant release",
     "android:bundle": "cd android && ./gradlew app:bundleRelease && cd ..",
     "ios": "expo run:ios",
-    "ios:bundle": "expo bundle:ios",
+    "ios:bundle": "expo export --platform ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "eslint .",

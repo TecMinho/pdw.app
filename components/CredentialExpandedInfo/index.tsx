@@ -1,6 +1,7 @@
 import { Text, View } from "react-native-ui-lib";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Image } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 import _ from "lodash";
 import { useLocalSearchParams } from "expo-router";
 import StorageHelper from "@/helpers/storage";
@@ -8,10 +9,6 @@ import { EBSIVerifiableCredential } from "@/helpers/ebsi";
 import { useLocale } from "@/context/TranslationContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { getStatusColor, StatusColors } from "@/utils/statusColors";
-import {
-  getCredentialTemplateId,
-  TECMINHO_COURSE_TEMPLATE_ID,
-} from "@/utils/credentialTemplates";
 
 /**
  * Props interface for the CredentialExpandedInfo component
@@ -20,6 +17,7 @@ import {
 interface CredentialExpandedInfoProps {
   data: EBSIVerifiableCredential | undefined;
   status: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 /**
@@ -29,6 +27,7 @@ interface CredentialExpandedInfoProps {
 export default function CredentialExpandedInfo({
   status,
   data,
+  style,
 }: CredentialExpandedInfoProps) {
   const { id } = useLocalSearchParams();
   const { t } = useLocale();
@@ -197,6 +196,7 @@ export default function CredentialExpandedInfo({
 
   return (
     <ScrollView
+      style={style}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
@@ -255,21 +255,6 @@ export default function CredentialExpandedInfo({
           </View>
         </View>
       </View>
-
-      {(credential.templateId === TECMINHO_COURSE_TEMPLATE_ID ||
-        getCredentialTemplateId(credential) === TECMINHO_COURSE_TEMPLATE_ID) && (
-        <View style={styles.templateCard}>
-          <Ionicons name="document-text-outline" size={20} color="#0B72B9" />
-          <View style={styles.templateCopy}>
-            <Text style={styles.templateLabel}>
-              {t("credentials.pdf_template")}
-            </Text>
-            <Text style={styles.templateName}>
-              {t("credentials.tecminho_course_template")}
-            </Text>
-          </View>
-        </View>
-      )}
 
       {issuerItems.length > 0 && (
         <View style={styles.sectionWrap}>
@@ -416,31 +401,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-  },
-  templateCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginTop: 14,
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: "#EAF5FC",
-    borderWidth: 1,
-    borderColor: "#B8DDF2",
-  },
-  templateCopy: { flex: 1 },
-  templateLabel: {
-    color: "#426278",
-    fontSize: 11,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
-  },
-  templateName: {
-    color: "#075985",
-    fontSize: 15,
-    fontWeight: "700",
-    marginTop: 2,
   },
   metaLabel: {
     fontSize: 10,

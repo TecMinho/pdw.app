@@ -3,7 +3,7 @@ import { Modal, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, FloatingButton, Text, TextField, View } from "react-native-ui-lib";
+import { Button, Text, TextField, View } from "react-native-ui-lib";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { mutate } from "swr";
 import StorageHelper from "@/helpers/storage";
@@ -13,6 +13,7 @@ import CredentialExpandedInfo from "@/components/CredentialExpandedInfo";
 import { useTextDialog } from "@/providers/textDialogProvider";
 import { useLocale } from "@/context/TranslationContext";
 import PreAuthorizedCodeInput from "@/components/PreAuthorizedCode";
+import { credentialApprovalLayout } from "@/utils/credentialApprovalLayout";
 
 export default function ImportLinkScreen() {
   const router = useRouter();
@@ -43,26 +44,34 @@ export default function ImportLinkScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Modal visible={!!data}>
-        <CredentialExpandedInfo data={data} status={""} />
-        <FloatingButton
-          visible
-          buttonLayout={"Horizontal"}
-          button={{
-            label: t("settings.accept"),
-            disabled: loading,
-            onPress: onApprove,
-            backgroundColor: "#10C790",
-          }}
-          secondaryButton={{
-            outline: false,
-            disabled: loading,
-            onPress: onReject,
-            color: "#7C7C7C",
-            backgroundColor: "#E6E6E6",
-            label: t("settings.reject"),
-          }}
-        />
+      <Modal
+        visible={!!data}
+        animationType="slide"
+        onRequestClose={onReject}
+      >
+        <SafeAreaView style={credentialApprovalLayout.screen}>
+          <View style={credentialApprovalLayout.content}>
+            <CredentialExpandedInfo data={data} status="" style={{ flex: 1 }} />
+          </View>
+          <View style={credentialApprovalLayout.actions}>
+            <Button
+              label={t("settings.reject")}
+              disabled={loading}
+              onPress={onReject}
+              backgroundColor="#101418"
+              labelStyle={{ color: "#E5E7EB", fontWeight: "700" }}
+              style={[credentialApprovalLayout.actionButton, credentialApprovalLayout.rejectButton]}
+            />
+            <Button
+              label={t("settings.accept")}
+              disabled={loading}
+              onPress={onApprove}
+              backgroundColor="#10C790"
+              labelStyle={{ color: "#0B0D10", fontWeight: "700" }}
+              style={credentialApprovalLayout.actionButton}
+            />
+          </View>
+        </SafeAreaView>
       </Modal>
 
       <View style={styles.headerRow}>

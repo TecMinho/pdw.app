@@ -3,7 +3,6 @@ import * as Sharing from "expo-sharing";
 import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system/legacy";
 import { Alert, Platform, Share } from "react-native";
-import { getCredentialTemplateId } from "@/utils/credentialTemplates";
 
 interface Credential {
   id: string;
@@ -14,9 +13,57 @@ interface Credential {
   expirationDate?: string;
   validUntil?: string;
   name?: string;
+  logo?: string;
   templateId?: string;
+  jwt?: string;
   credentialSubject?: { [key: string]: any };
 }
+
+export type PdfLabels = {
+  eyebrow: string;
+  issuedTo: string;
+  intro: string;
+  holder: string;
+  course: string;
+  classification: string;
+  issued: string;
+  validUntil: string;
+  footer: string;
+  fallbackTitle: string;
+  shareTitle: string;
+  missingCredentialTitle: string;
+  missingCredentialMessage: string;
+  cacheUnavailableMessage: string;
+  sharingUnavailableMessage: string;
+  errorTitle: string;
+  unknownErrorMessage: string;
+  createdAtLabel?: string;
+  createdAt?: Date | string;
+  fieldLabels?: Record<string, string>;
+  dateLocale?: string;
+};
+
+const DEFAULT_PDF_LABELS: PdfLabels = {
+  eyebrow: "VERIFIABLE CREDENTIAL",
+  issuedTo: "Issued to",
+  intro: "This credential contains the information shown below.",
+  holder: "Holder",
+  course: "Course",
+  classification: "Classification",
+  issued: "Issued",
+  validUntil: "Valid until",
+  footer: "Digitally verifiable credential",
+  fallbackTitle: "Verifiable Credential",
+  shareTitle: "Share credential",
+  missingCredentialTitle: "PDF",
+  missingCredentialMessage: "Credential data could not be found.",
+  cacheUnavailableMessage: "The app cache is not available.",
+  sharingUnavailableMessage: "Native sharing is not available in this Expo Go.",
+  errorTitle: "Could not generate PDF",
+  unknownErrorMessage: "Unknown error while generating the PDF.",
+  createdAtLabel: "Created at",
+  dateLocale: "en-GB",
+};
 
 const escapeHtml = (value: unknown): string =>
   String(value ?? "N/A")
@@ -25,128 +72,167 @@ const escapeHtml = (value: unknown): string =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
-const formatDate = (value: string | undefined): string => {
-  if (!value) return "N/A";
+const TECHNICAL_FIELD_NAMES = new Set([
+  "@context",
+  "accesstoken",
+  "credentialschema",
+  "credential_id",
+  "credentialid",
+  "did",
+  "id",
+  "identifier",
+  "issuer",
+  "jti",
+  "jwt",
+  "proof",
+  "statuslistcredential",
+  "sub",
+  "type",
+]);
+
+const isTechnicalField = (key: string): boolean => {
+  const lowerKey = key.toLowerCase();
+
+  return (
+    TECHNICAL_FIELD_NAMES.has(lowerKey) ||
+    /identifier|jwt|proof|verificationmethod|credentialschema|accesstoken|statuslist/.test(
+      lowerKey,
+    ) ||
+    /(?:Id|ID|Did|DID)$/.test(key) ||
+    /(?:Issuer|Schema)$/.test(key)
+  );
+};
+
+const formatDate = (
+  value: string | undefined,
+  locale = "en-GB",
+): string | null => {
+  if (!value) return null;
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : date.toLocaleDateString("pt-PT");
+    : date.toLocaleDateString(locale);
 };
 
-function getCourseFields(credential: Credential) {
+const formatDateTime = (
+  value: Date | string | undefined,
+  locale = "en-GB",
+): string | null => {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime())
+    ? String(value)
+    : date.toLocaleString(locale, {
+        dateStyle: "short",
+        timeStyle: "short",
+      });
+};
+
+const firstValue = <T>(value: T | T[] | undefined): T | undefined =>
+  Array.isArray(value) ? value[0] : value;
+
+const humanizeKey = (key: string, labels?: PdfLabels): string =>
+  labels?.fieldLabels?.[key.toLowerCase()] ??
+  key
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/^\s*\w/, (character) => character.toUpperCase());
+
+function getCredentialHighlights(credential: Credential, labels: PdfLabels) {
   const subject = credential.credentialSubject ?? {};
-  const achieved = Array.isArray(subject.achieved)
-    ? subject.achieved[0]
-    : subject.achieved;
-  const derivedFrom = Array.isArray(achieved?.wasDerivedFrom)
-    ? achieved.wasDerivedFrom[0]
-    : achieved?.wasDerivedFrom;
-  const holder =
-    subject.name ??
-    subject.fullName ??
-    subject.person?.name ??
-    subject.person?.fullName ??
-    subject.identifier?.value ??
-    subject.id ??
-    "N/A";
+  const achieved = firstValue(subject.achieved);
+  const assessment = firstValue(achieved?.wasDerivedFrom);
+  const person = subject.person;
 
-  return {
-    holder,
-    course: achieved?.title ?? subject.courseName ?? credential.name ?? "N/A",
-    assessment: derivedFrom?.grade ?? "N/A",
-    issued: formatDate(credential.issuanceDate ?? credential.validFrom),
-    expires: formatDate(credential.expirationDate ?? credential.validUntil),
-    issuer: "TecMinho",
-    id: credential.id,
-  };
-}
-
-export function buildTecMinhoCoursePdfHtml(
-  credential: Credential,
-  logoSrc = "",
-): string {
-  const fields = getCourseFields(credential);
-  const field = (label: string, value: unknown) => `
-    <div class="field">
-      <span class="label">${escapeHtml(label)}</span>
-      <span class="value">${escapeHtml(value)}</span>
-    </div>`;
-
-  return `
-    <html>
-      <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
-      <body>
-        <div class="certificate">
-          ${logoSrc ? `<img src="${logoSrc}" alt="TecMinho" class="logo" />` : ""}
-          <div class="eyebrow">TECMINHO · UNIVERSIDADE DO MINHO</div>
-          <h1>CREDENCIAL DE CURSO</h1>
-          <div class="course">${escapeHtml(fields.course)}</div>
-          <p class="intro">Certifica-se que</p>
-          <div class="holder">${escapeHtml(fields.holder)}</div>
-          <p class="intro">concluiu a formação indicada nesta credencial.</p>
-          <div class="details">
-            ${field("Avaliação", fields.assessment)}
-            ${field("Data de emissão", fields.issued)}
-            ${field("Válida até", fields.expires)}
-            ${field("Entidade emissora", fields.issuer)}
-          </div>
-          <div class="footer">Credencial digital verificável · TecMinho</div>
-        </div>
-        <style>
-          * { box-sizing: border-box; }
-          body { margin: 0; padding: 42px; font-family: Arial, sans-serif; color: #17324d; background: #fff; }
-          .certificate { min-height: 720px; border: 2px solid #005b9a; padding: 38px 42px; text-align: center; position: relative; }
-          .logo { width: 180px; height: auto; max-height: 90px; object-fit: contain; margin-bottom: 26px; }
-          .eyebrow { color: #0072b8; font-size: 11px; letter-spacing: 1.5px; font-weight: bold; }
-          h1 { color: #005b9a; font-size: 25px; letter-spacing: 1px; margin: 18px 0 26px; }
-          .course { color: #17324d; font-size: 22px; font-weight: bold; margin: 0 auto 24px; max-width: 480px; }
-          .intro { color: #51687b; font-size: 14px; margin: 9px 0; }
-          .holder { color: #005b9a; font-size: 25px; font-weight: bold; margin: 8px 0; }
-          .details { text-align: left; margin: 34px auto 0; max-width: 470px; border-top: 1px solid #c8d8e3; }
-          .field { display: flex; gap: 16px; padding: 9px 0; border-bottom: 1px solid #e2ebf0; font-size: 12px; }
-          .label { color: #51687b; font-weight: bold; width: 130px; }
-          .value { color: #17324d; flex: 1; word-break: break-word; }
-          .footer { position: absolute; left: 42px; right: 42px; bottom: 24px; color: #6f8493; font-size: 10px; }
-        </style>
-      </body>
-    </html>`;
+  return [
+    {
+      label: labels.holder,
+      value:
+        subject.name ??
+        subject.fullName ??
+        person?.name ??
+        person?.fullName,
+    },
+    {
+      label: labels.course,
+      value: achieved?.title ?? subject.courseName ?? subject.course?.name,
+    },
+    {
+      label: labels.classification,
+      value: assessment?.grade ?? subject.grade ?? subject.classification,
+    },
+    {
+      label: labels.issued,
+      value: formatDate(
+        credential.issuanceDate ?? credential.validFrom,
+        labels.dateLocale,
+      ),
+    },
+    {
+      label: labels.validUntil,
+      value: formatDate(
+        credential.expirationDate ?? credential.validUntil,
+        labels.dateLocale,
+      ),
+    },
+    {
+      label: labels.createdAtLabel ?? "Created at",
+      value: formatDateTime(labels.createdAt ?? new Date(), labels.dateLocale),
+    },
+  ].filter(({ value }) => value !== undefined && value !== null && value !== "");
 }
 
 /**
  * Safely renders any credential field to HTML.
  */
-function renderSubjectFields(data: any, level = 0): string {
+function renderSubjectFields(
+  data: any,
+  level = 0,
+  excludedKeys = new Set<string>(),
+  labels: PdfLabels = DEFAULT_PDF_LABELS,
+): string {
   if (typeof data !== "object" || data === null) {
     return `<span class="value">${escapeHtml(data)}</span>`;
   }
 
   return Object.entries(data)
     .map(([key, value]) => {
-      const indent = "&nbsp;".repeat(level * 4);
+      if (isTechnicalField(key) || excludedKeys.has(key.toLowerCase())) {
+        return "";
+      }
+
+      const label = humanizeKey(key, labels);
       const isNested = typeof value === "object" && value !== null;
 
       if (Array.isArray(value)) {
         const items = value
           .map((item) => {
-            return `<div class="field">${renderSubjectFields(
-              item,
-              level + 1,
-            )}</div>`;
+            if (typeof item === "object" && item !== null) {
+              return `<div class="nested-card">${renderSubjectFields(
+                item,
+                level + 1,
+                excludedKeys,
+                labels,
+              )}</div>`;
+            }
+            return `<span class="array-value">${escapeHtml(item)}</span>`;
           })
           .join("");
-        return `<div class="field"><span class="label">${indent}${key}:</span>${items}</div>`;
+        return `<div class="field nested-field"><span class="label">${escapeHtml(
+          label,
+        )}</span><div class="nested-values">${items}</div></div>`;
       }
 
-      const safeKey = String(key)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-
       return `<div class="field">
-                <span class="label">${indent}${safeKey}:</span>
+                <span class="label">${escapeHtml(label)}</span>
                 ${
                   isNested
-                    ? renderSubjectFields(value, level + 1)
+                    ? `<div class="nested-values">${renderSubjectFields(
+                        value,
+                        level + 1,
+                        excludedKeys,
+                        labels,
+                      )}</div>`
                     : `<span class="value">${escapeHtml(value)}</span>`
                 }
               </div>`;
@@ -155,39 +241,49 @@ function renderSubjectFields(data: any, level = 0): string {
 }
 
 /**
- * Builds the HTML displayed in the in-app PDF preview.
- * The TecMinho certificate uses the same template as the generated PDF.
+ * Builds the generic HTML displayed in the in-app PDF preview and generated PDF.
  */
 export async function buildCredentialPdfPreviewHtml(
   credential: Credential,
+  labels: PdfLabels = DEFAULT_PDF_LABELS,
 ): Promise<string> {
-  if (
-    credential.templateId === "tecminho-course" ||
-    getCredentialTemplateId(credential) ===
-      "tecminho-course"
-  ) {
-    let logoSrc = "";
-    try {
-      logoSrc = await loadTecMinhoLogoAsBase64();
-    } catch {
-      // Keep the preview usable if the bundled logo cannot be loaded.
-    }
-    return buildTecMinhoCoursePdfHtml(credential, logoSrc);
-  }
-
   let logoSrc = "";
   try {
-    logoSrc = await loadLogoAsBase64();
+    logoSrc = await loadCredentialLogoAsBase64(credential.logo);
   } catch {
     // Keep the preview usable if the bundled logo cannot be loaded.
   }
-  return buildGenericCredentialPdfHtml(credential, logoSrc);
+  return buildGenericCredentialPdfHtml(credential, logoSrc, labels);
 }
 
-function buildGenericCredentialPdfHtml(
+export function buildGenericCredentialPdfHtml(
   credential: Credential,
   logoSrc: string,
+  labels: PdfLabels = DEFAULT_PDF_LABELS,
 ): string {
+  const effectiveLabels: PdfLabels = {
+    ...DEFAULT_PDF_LABELS,
+    ...labels,
+    createdAt: labels.createdAt ?? new Date(),
+  };
+  const title = credential.name || effectiveLabels.fallbackTitle;
+  const highlights = getCredentialHighlights(credential, effectiveLabels);
+  const holder = highlights.find(({ label }) => label === effectiveLabels.holder)?.value;
+  const course = highlights.find(({ label }) => label === effectiveLabels.course)?.value;
+  const detailHighlights = highlights.filter(
+    ({ label }) =>
+      label !== effectiveLabels.holder && label !== effectiveLabels.course,
+  );
+  const excludedSubjectKeys = new Set([
+    "name",
+    "fullname",
+    "achieved",
+    "coursename",
+    "course",
+    "grade",
+    "classification",
+  ]);
+
   return `
     <html>
       <head>
@@ -195,26 +291,65 @@ function buildGenericCredentialPdfHtml(
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
       </head>
       <body>
-        ${logoSrc ? `<div class="logo-wrapper"><img src="${logoSrc}" alt="Logo" class="logo" /></div>` : ""}
-        <h1>Credential Details</h1>
-        <div class="field">
-          <span class="label">ID:</span>
-          <span class="value">${escapeHtml(credential.id)}</span>
+        <div class="certificate">
+          ${logoSrc ? `<div class="logo-wrapper"><img src="${escapeHtml(logoSrc)}" alt="Issuer logo" class="logo" /></div>` : ""}
+          <div class="eyebrow">${escapeHtml(effectiveLabels.eyebrow)}</div>
+          <h1>${escapeHtml(title)}</h1>
+          ${course ? `<div class="course">${escapeHtml(course)}</div>` : ""}
+          ${
+            holder
+              ? `<p class="intro">${escapeHtml(effectiveLabels.issuedTo)}</p>
+                 <div class="holder">${escapeHtml(holder)}</div>`
+              : ""
+          }
+          ${
+            holder || course
+              ? `<p class="intro">${escapeHtml(effectiveLabels.intro)}</p>`
+              : ""
+          }
+          <div class="details">
+            ${detailHighlights
+              .map(
+                ({ label, value }) => `
+                  <div class="field">
+                    <span class="label">${escapeHtml(label)}</span>
+                    <span class="value">${escapeHtml(value)}</span>
+                  </div>`,
+              )
+              .join("")}
+            ${renderSubjectFields(
+              credential.credentialSubject ?? {},
+              0,
+              excludedSubjectKeys,
+              effectiveLabels,
+            )}
+          </div>
+          <div class="footer">${escapeHtml(effectiveLabels.footer)}</div>
         </div>
-        ${renderSubjectFields(credential.credentialSubject ?? {})}
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-            padding: 40px 32px; background-color: #ffffff; color: #333333;
+            padding: 32px; background-color: #ffffff; color: #333333;
             font-size: 14px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word;
           }
+          .certificate { min-height: 760px; border: 2px solid #005b9a; padding: 40px 46px; text-align: center; position: relative; }
           .logo-wrapper { text-align: center; margin-bottom: 24px; }
-          .logo { width: 120px; height: auto; max-width: 100%; }
-          h1 { color: #005BAC; margin-bottom: 24px; text-align: center; font-size: 22px; font-weight: 600; }
-          .field { margin-bottom: 12px; page-break-inside: avoid; max-width: 100%; }
-          .label { font-weight: 600; color: #222222; display: inline-block; min-width: 140px; vertical-align: top; }
-          .value { color: #555555; display: inline-block; max-width: 70%; word-break: break-word; }
+          .logo { width: 180px; height: auto; max-height: 90px; object-fit: contain; }
+          .eyebrow { color: #0072b8; font-size: 11px; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 16px; }
+          h1 { color: #005b9a; margin-bottom: 24px; text-align: center; font-size: 25px; letter-spacing: 1px; font-weight: 700; word-break: break-word; }
+          .course { color: #17324d; font-size: 22px; font-weight: 700; margin: 0 auto 24px; max-width: 480px; overflow-wrap: anywhere; }
+          .intro { color: #51687b; font-size: 14px; margin: 9px 0; }
+          .holder { color: #005b9a; font-size: 25px; font-weight: 700; margin: 8px 0; overflow-wrap: anywhere; }
+          .details { text-align: left; margin: 34px auto 0; max-width: 470px; border-top: 1px solid #c8d8e3; }
+          .field { display: flex; gap: 16px; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid #e2ebf0; font-size: 12px; page-break-inside: avoid; }
+          .label { color: #51687b; font-weight: 700; flex: 0 0 34%; }
+          .value, .array-value { color: #17324d; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+          .nested-values { flex: 1; min-width: 0; }
+          .nested-card { border-left: 3px solid #cbd9e5; padding-left: 12px; margin-bottom: 8px; }
+          .nested-card .field { padding: 5px 0; margin-bottom: 0; }
+          .nested-card .label { flex-basis: 40%; font-weight: 600; }
+          .footer { position: absolute; left: 46px; right: 46px; bottom: 24px; color: #9cccf0; font-size: 10px; }
           @media print { body { padding: 24px; } }
         </style>
       </body>
@@ -274,54 +409,60 @@ async function loadLogoAsBase64(): Promise<string> {
   throw new Error("Unable to load logo image as base64.");
 }
 
-async function loadTecMinhoLogoAsBase64(): Promise<string> {
-  const asset = Asset.fromModule(require("@/assets/images/logos/tecminho.png"));
-  await asset.downloadAsync();
-  const candidateUris = [asset.localUri, asset.uri].filter(
-    (uri): uri is string => Boolean(uri),
-  );
+async function loadCredentialLogoAsBase64(logoUri?: string): Promise<string> {
+  if (!logoUri) return loadLogoAsBase64();
+  if (
+    /^data:image\/(png|jpeg|jpg|webp);base64,[A-Za-z0-9+/=\s]+$/i.test(
+      logoUri,
+    )
+  ) {
+    return logoUri;
+  }
 
-  for (const uri of candidateUris) {
-    try {
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      if (base64) return `data:image/png;base64,${base64}`;
-    } catch {
-      // Try the next candidate URI.
-    }
+  const candidateUri = logoUri;
+  const mimeType = logoUri.toLowerCase().endsWith(".jpg") ||
+    logoUri.toLowerCase().endsWith(".jpeg")
+    ? "image/jpeg"
+    : "image/png";
+
+  try {
+    const base64 = await FileSystem.readAsStringAsync(candidateUri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    if (base64) return `data:${mimeType};base64,${base64}`;
+  } catch {
+    // Remote issuer logos need to be downloaded before being embedded in HTML.
   }
 
   if (FileSystem.cacheDirectory) {
-    const cacheUri = `${FileSystem.cacheDirectory}pdf-tecminho-logo-${asset.hash ?? Date.now()}.png`;
-    for (const uri of candidateUris) {
-      try {
-        await FileSystem.copyAsync({ from: uri, to: cacheUri });
-        const base64 = await FileSystem.readAsStringAsync(cacheUri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        if (base64) return `data:image/png;base64,${base64}`;
-      } catch {
-        // Keep trying alternatives.
-      }
+    const extension = mimeType === "image/jpeg" ? "jpg" : "png";
+    const cacheUri = `${FileSystem.cacheDirectory}pdf-issuer-logo-${Date.now()}.${extension}`;
+    try {
+      await FileSystem.downloadAsync(candidateUri, cacheUri);
+      const base64 = await FileSystem.readAsStringAsync(cacheUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      if (base64) return `data:${mimeType};base64,${base64}`;
+    } catch {
+      // Fall back to the bundled application logo below.
     }
   }
 
-  throw new Error("Unable to load TecMinho logo as base64.");
+  return loadLogoAsBase64();
 }
 
 async function openGeneratedPdf(
   uri: string,
-  dialogTitle: string,
+  labels: PdfLabels,
 ): Promise<void> {
   if (!FileSystem.cacheDirectory) {
-    throw new Error("A cache local da aplicação não está disponível.");
+    throw new Error(labels.cacheUnavailableMessage);
   }
 
   // expo-print stores the generated file under cache/Print. Copy it to the
   // app cache root so Expo Go/iOS can share it reliably. Android additionally
   // needs the resulting file converted to a content:// URI.
-  const writableUri = `${FileSystem.cacheDirectory}tecminho-credential-${Date.now()}.pdf`;
+  const writableUri = `${FileSystem.cacheDirectory}credential-${Date.now()}.pdf`;
   await FileSystem.copyAsync({ from: uri, to: writableUri });
   let shareUri = writableUri;
   if (Platform.OS === "android") {
@@ -332,7 +473,7 @@ async function openGeneratedPdf(
   if (sharingAvailable) {
     await Sharing.shareAsync(shareUri, {
       mimeType: "application/pdf",
-      dialogTitle,
+      dialogTitle: labels.shareTitle,
       // iOS uses UTI, rather than mimeType, to identify the shared file.
       UTI: "com.adobe.pdf",
     });
@@ -340,12 +481,12 @@ async function openGeneratedPdf(
   }
 
   if (Platform.OS === "ios") {
-    throw new Error("A partilha nativa não está disponível neste Expo Go.");
+    throw new Error(labels.sharingUnavailableMessage);
   }
 
   // Fallback for an installed native build that does not include Expo Sharing.
   // React Native's native share sheet can still send the local PDF to Files.
-  await Share.share({ url: shareUri, title: dialogTitle });
+  await Share.share({ url: shareUri, title: labels.shareTitle });
 }
 
 /**
@@ -353,56 +494,43 @@ async function openGeneratedPdf(
  */
 export async function generateAndSharePDF(
   credential: Credential | undefined,
+  labels: PdfLabels = DEFAULT_PDF_LABELS,
 ): Promise<string | null> {
+  const effectiveLabels: PdfLabels = { ...DEFAULT_PDF_LABELS, ...labels };
+
   if (!credential) {
-    Alert.alert("PDF", "Não foi possível encontrar os dados da credencial.");
+    Alert.alert(
+      effectiveLabels.missingCredentialTitle,
+      effectiveLabels.missingCredentialMessage,
+    );
     return null;
   }
 
   try {
-    if (
-      credential.templateId === "tecminho-course" ||
-      getCredentialTemplateId(credential) ===
-        "tecminho-course"
-    ) {
-      let logoSrc = "";
-      try {
-        logoSrc = await loadTecMinhoLogoAsBase64();
-      } catch {
-        // Generate the certificate without a logo if the asset is unavailable.
-      }
-      const { uri } = await Print.printToFileAsync({
-        html: buildTecMinhoCoursePdfHtml(credential, logoSrc),
-        width: 595,
-        height: 842,
-      });
-
-      await openGeneratedPdf(uri, "Partilhar credencial TecMinho");
-      return uri;
-    }
-
     let logoSrc = "";
 
-    // Avoid failing PDF generation if the bundled logo cannot be read on release builds.
+    // Avoid failing PDF generation if the issuer logo cannot be read.
     try {
-      logoSrc = await loadLogoAsBase64();
+      logoSrc = await loadCredentialLogoAsBase64(credential.logo);
     } catch {
       logoSrc = "";
     }
 
     const { uri } = await Print.printToFileAsync({
-      html: buildGenericCredentialPdfHtml(credential, logoSrc),
+      html: buildGenericCredentialPdfHtml(credential, logoSrc, labels),
       width: 595, // A4 width (pt)
       height: 842, // A4 height (pt)
     });
 
-    await openGeneratedPdf(uri, "Partilhar credencial");
+    await openGeneratedPdf(uri, effectiveLabels);
     return uri;
   } catch (error) {
     console.error("Erro ao criar o PDF:", error);
     const message =
-      error instanceof Error ? error.message : "Erro desconhecido ao criar o PDF.";
-    Alert.alert("Não foi possível gerar o PDF", message);
+      error instanceof Error
+        ? error.message
+        : effectiveLabels.unknownErrorMessage;
+    Alert.alert(effectiveLabels.errorTitle, message);
     return null;
   }
 }
