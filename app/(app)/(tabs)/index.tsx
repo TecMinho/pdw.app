@@ -25,6 +25,7 @@ import { useLocale } from "@/context/TranslationContext";
 import NoCredentialsView from "@/components/NoCredentialsView";
 import Colors from "@/constants/Colors";
 import PreAuthorizedCodeInput from "@/components/PreAuthorizedCode";
+import { getCredentialCardSummary } from "@/utils/credentialCardSummary";
 
 /**
  * Interface defining the props for the CredentialCard component
@@ -43,6 +44,8 @@ interface CredentialCardProps {
   t: Function;
   logo?: string;
   backgroundImage?: string;
+  course?: string | null;
+  classification?: string | null;
 }
 
 /**
@@ -67,6 +70,8 @@ export const CredentialCard: React.FC<CredentialCardProps> = ({
   t,
   logo,
   backgroundImage,
+  course,
+  classification,
 }) => {
   const isRevoked = status === "revoked";
   const isExpired = status === "expired";
@@ -122,6 +127,21 @@ export const CredentialCard: React.FC<CredentialCardProps> = ({
 
         <Text style={styles.credentialTitle}>{primaryTitle}</Text>
         <Text style={styles.credentialSubtitle}>{secondaryTitle}</Text>
+
+        {course || classification ? (
+          <View style={styles.credentialCourseSummary}>
+            {course ? (
+              <Text style={styles.credentialCourseText} numberOfLines={1}>
+                {t("credentials.course")}: {course}
+              </Text>
+            ) : null}
+            {classification ? (
+              <Text style={styles.credentialCourseText} numberOfLines={1}>
+                {t("credentials.classification")}: {classification}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
 
         {!backgroundImage ? <View style={styles.credentialSpacer} /> : null}
 
@@ -550,6 +570,7 @@ const onApprove = async () => {
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <CredentialCard
+                  {...getCredentialCardSummary(item)}
                   title={item.type?.[2] || t("main.unknown_credential")}
                   validUntil={new Date(item.validUntil).toLocaleDateString()}
                   expirationDate={new Date(
@@ -953,6 +974,16 @@ const styles = StyleSheet.create({
     color: "#A1A1AA",
     marginBottom: 8,
   },
+  credentialCourseSummary: {
+    width: "100%",
+    marginBottom: 4,
+    gap: 2,
+  },
+  credentialCourseText: {
+    color: "#D1D5DB",
+    fontSize: 12,
+    fontWeight: "600",
+  },
   credentialSpacer: {
     height: 8,
   },
@@ -987,7 +1018,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   sheetBackdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(0,0,0,0.55)",
   },
   sheetWrap: {

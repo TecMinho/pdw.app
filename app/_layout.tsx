@@ -1,6 +1,6 @@
 import "../i18n.config";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { DefaultTheme, ThemeProvider } from "expo-router/react-navigation";
+import { DefaultTheme, ThemeProvider } from "expo-router";
 import { useFonts } from "expo-font";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -13,7 +13,6 @@ import { LogBox } from "react-native";
 import { I18nextProvider } from "react-i18next";
 import { TranslationProvider } from "@/context/TranslationContext";
 import i18next from "i18next";
-import { Appearance } from 'react-native';
 
 /**
  * Export Error Boundary for Global Error Handling
@@ -106,7 +105,7 @@ function RootLayoutNav() {
           <CredentialSelectorProvider>
             <TextDialogProvider>
               <AuthProvider>
-                <StatusBar animated style="light" translucent />
+                <StatusBar animated style="light" />
                 <Slot />
               </AuthProvider>
             </TextDialogProvider>
