@@ -220,6 +220,7 @@ export class EBSIVerifiableCredential {
   name: string | undefined;
   logo: string | undefined;
   backgroundImage: string | undefined;
+  claimsMetadata: Record<string, unknown> | undefined;
   templateId: CredentialTemplateId | undefined;
 
   /**
@@ -253,6 +254,7 @@ export class EBSIVerifiableCredential {
     name?: string,
     logo?: string,
     backgroundImage?: string,
+    claimsMetadata?: Record<string, unknown>,
     templateId?: CredentialTemplateId,
   ) {
     this.id = id;
@@ -270,6 +272,7 @@ export class EBSIVerifiableCredential {
     this.name = name;
     this.logo = logo;
     this.backgroundImage = backgroundImage;
+    this.claimsMetadata = claimsMetadata;
     this.templateId = templateId;
   }
 
@@ -296,6 +299,7 @@ export class EBSIVerifiableCredential {
       json["name"],
       json["logo"],
       json["backgroundImage"],
+      json["claimsMetadata"],
       json["templateId"],
     );
   }
@@ -322,6 +326,7 @@ export class EBSIVerifiableCredential {
       logo: this.logo,
       name: this.name,
       backgroundImage: this.backgroundImage,
+      claimsMetadata: this.claimsMetadata,
       templateId: this.templateId,
     };
   }
@@ -348,6 +353,7 @@ export class EBSIServices {
     name?: string,
     logo?: string,
     backgroundImage?: string,
+    claimsMetadata?: Record<string, unknown>,
   ): Promise<EBSIVerifiableCredential | null> {
     try {
       const vcPayload = credentialOffer.vc;
@@ -358,6 +364,7 @@ export class EBSIServices {
         logo,
         name,
         backgroundImage,
+        claimsMetadata,
       });
       if (!credential) {
         throw new Error("Error creating verifiable credential");

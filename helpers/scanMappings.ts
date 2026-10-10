@@ -273,11 +273,10 @@ export const scanMappings: ScanMappings = {
         let credentialBackgroundImage = "";
 
         if (displayCredential) {
-          const { name, logo, background_image } =
-            displayCredential?.display[0];
-          credentialName = name;
-          credentialLogo = logo?.uri;
-          credentialBackgroundImage = background_image?.uri;
+          const display = displayCredential.display?.[0] ?? {};
+          credentialName = display.name;
+          credentialLogo = display.logo?.uri;
+          credentialBackgroundImage = display.background_image?.uri;
         }
 
         return EBSIServices.getVerifiableCredential(
@@ -286,6 +285,8 @@ export const scanMappings: ScanMappings = {
           credentialName,
           credentialLogo,
           credentialBackgroundImage,
+          displayCredential?.claims ??
+            displayCredential?.credential_metadata?.claims,
         );
       } else {
         const preAuthorizedCode =
@@ -379,11 +380,10 @@ export const scanMappings: ScanMappings = {
         let credentialBackgroundImage = "";
 
         if (displayCredential) {
-          const { name, logo, background_image } =
-            displayCredential?.display[0];
-          credentialBackgroundImage = background_image?.uri;
-          credentialName = name;
-          credentialLogo = logo?.uri;
+          const display = displayCredential.display?.[0] ?? {};
+          credentialBackgroundImage = display.background_image?.uri;
+          credentialName = display.name;
+          credentialLogo = display.logo?.uri;
         }
 
         return EBSIServices.getVerifiableCredential(
@@ -392,6 +392,8 @@ export const scanMappings: ScanMappings = {
           credentialName,
           credentialLogo,
           credentialBackgroundImage,
+          displayCredential?.claims ??
+            displayCredential?.credential_metadata?.claims,
         );
       }
     },

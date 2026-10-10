@@ -155,6 +155,7 @@ export default class StorageHelper {
             name: credential.name,
             logo: credential.logo,
             backgroundImage: credential.backgroundImage,
+            claimsMetadata: credential.claimsMetadata,
             templateId:
               credential.templateId ?? getCredentialTemplateId(credential),
           }).toJson();
@@ -220,6 +221,7 @@ export default class StorageHelper {
             name: certificate.name,
             logo: certificate.logo,
             backgroundImage: certificate.backgroundImage,
+            claimsMetadata: certificate.claimsMetadata,
             templateId:
               certificate.templateId ?? getCredentialTemplateId(certificate),
           });
