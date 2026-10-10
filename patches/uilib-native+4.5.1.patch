@@ -1,0 +1,97 @@
+diff --git a/node_modules/uilib-native/android/src/main/java/com/wix/reactnativeuilib/keyboardinput/utils/RuntimeUtils.java b/node_modules/uilib-native/android/src/main/java/com/wix/reactnativeuilib/keyboardinput/utils/RuntimeUtils.java
+index 95c5e8e..e4c0b5c 100644
+--- a/node_modules/uilib-native/android/src/main/java/com/wix/reactnativeuilib/keyboardinput/utils/RuntimeUtils.java
++++ b/node_modules/uilib-native/android/src/main/java/com/wix/reactnativeuilib/keyboardinput/utils/RuntimeUtils.java
+@@ -9,7 +9,8 @@ public class RuntimeUtils {
+     private static final Runnable sUIUpdateClosure = new Runnable() {
+         @Override
+         public void run() {
+-            ReactContextHolder.getContext().getNativeModule(UIManagerModule.class).onBatchComplete();
++            // Comment this line out as onBatchComplete() no longer exists in RN 0.86+
++            // ReactContextHolder.getContext().getNativeModule(UIManagerModule.class).onBatchComplete();
+         }
+     };
+ 
+diff --git a/node_modules/uilib-native/ios/reactnativeuilib/keyboardtrackingview/KeyboardTrackingViewTempManager.m b/node_modules/uilib-native/ios/reactnativeuilib/keyboardtrackingview/KeyboardTrackingViewTempManager.m
+index 6d81773..ff88d6f 100644
+--- a/node_modules/uilib-native/ios/reactnativeuilib/keyboardtrackingview/KeyboardTrackingViewTempManager.m
++++ b/node_modules/uilib-native/ios/reactnativeuilib/keyboardtrackingview/KeyboardTrackingViewTempManager.m
+@@ -11,7 +11,6 @@
+ #import "UIResponder+FirstResponderTemp.h"
+ 
+ #import <WebKit/WebKit.h>
+-#import <React/RCTScrollView.h>
+ #import <React/RCTBridge.h>
+ #import <React/RCTUIManager.h>
+ #import <React/UIView+React.h>
+@@ -20,6 +19,7 @@
+ #import <objc/runtime.h>
+ 
+ 
++
+ NSUInteger const kInputViewKeyTemp = 101010;
+ NSUInteger const kMaxDeferedInitializeAccessoryViewsTemp = 15;
+ NSInteger  const kTrackingViewNotFoundErrorCodeTemp = 1;
+@@ -172,7 +172,9 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+ - (void)initializeAccessoryViewsAndHandleInsets
+ {
+     NSArray<UIView*>* allSubviews = [self getBreadthFirstSubviewsForView:[self getRootView]];
+-    NSMutableArray<RCTScrollView*>* rctScrollViewsArray = [NSMutableArray array];
++    NSMutableArray<UIScrollView*>* rctScrollViewsArray = [NSMutableArray array]; // Changed type from RCTScrollView* to UIScrollView*
++
++    Class rctScrollViewClass = NSClassFromString(@"RCTScrollView");
+     
+     for (UIView* subview in allSubviews)
+     {
+@@ -180,9 +182,11 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+         {
+             if(_scrollViewToManage == nil)
+             {
+-                if(_requiresSameParentToManageScrollView && [subview isKindOfClass:[RCTScrollView class]] && subview.superview == self.superview)
++                // 👇 UPDATED LINE: Check class structure dynamically using NSClassFromString
++                if(_requiresSameParentToManageScrollView && rctScrollViewClass && [subview isKindOfClass:rctScrollViewClass] && subview.superview == self.superview)
+                 {
+-                    _scrollViewToManage = ((RCTScrollView*)subview).scrollView;
++                    // 👇 UPDATED LINE: Safely read the underlying scrollView using Key-Value Coding (KVC) to avoid static binding
++                    _scrollViewToManage = [subview valueForKey:@"scrollView"];
+                 }
+                 else if(!_requiresSameParentToManageScrollView && [subview isKindOfClass:[UIScrollView class]])
+                 {
+@@ -195,10 +199,12 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+                 }
+             }
+ 
+-            if([subview isKindOfClass:[RCTScrollView class]])
++            // 👇 UPDATED LINE: Collect matching views using runtime reflection parameters
++            if(rctScrollViewClass && [subview isKindOfClass:rctScrollViewClass])
+             {
+-                [rctScrollViewsArray addObject:(RCTScrollView*)subview];
++                [rctScrollViewsArray addObject:(UIScrollView*)subview];
+             }
++
+         }
+         
+         if ([subview isKindOfClass:NSClassFromString(@"RCTTextField")])
+@@ -247,12 +253,18 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+         }
+     }
+ 
+-    for (RCTScrollView *scrollView in rctScrollViewsArray)
++    for (UIScrollView *scrollViewContainer in rctScrollViewsArray)
+     {
+-        if(scrollView.scrollView == _scrollViewToManage)
++        UIScrollView *actualScrollView = [scrollViewContainer valueForKey:@"scrollView"];
++        if(actualScrollView == _scrollViewToManage)
+         {
+-            [scrollView removeScrollListener:self];
+-            [scrollView addScrollListener:self];
++            // Use performSelector or explicit signature checking to trigger listener hooks safely
++            if ([scrollViewContainer respondsToSelector:NSSelectorFromString(@"removeScrollListener:")]) {
++                [scrollViewContainer performSelector:NSSelectorFromString(@"removeScrollListener:") withObject:self];
++            }
++            if ([scrollViewContainer respondsToSelector:NSSelectorFromString(@"addScrollListener:")]) {
++                [scrollViewContainer performSelector:NSSelectorFromString(@"addScrollListener:") withObject:self];
++            }
+             break;
+         }
+     }
