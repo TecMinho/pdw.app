@@ -51,7 +51,7 @@ export default function ImportLinkScreen() {
       >
         <SafeAreaView style={credentialApprovalLayout.screen}>
           <View style={credentialApprovalLayout.content}>
-            <CredentialExpandedInfo data={data} status="" style={{ flex: 1 }} />
+            <CredentialExpandedInfo data={data} status="" />
           </View>
           <View style={credentialApprovalLayout.actions}>
             <Button
