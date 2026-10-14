@@ -2,7 +2,7 @@
   "name": "portuguese-digital-wallet",
   "main": "expo-router/entry",
   "license": "Apache-2.0",
-  "version": "1.7.5",
+  "version": "1.7.6",
   "authors": [
     {
       "name": "TecMinho",
