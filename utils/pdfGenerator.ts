@@ -465,9 +465,6 @@ async function openGeneratedPdf(
   const writableUri = `${FileSystem.cacheDirectory}credential-${Date.now()}.pdf`;
   await FileSystem.copyAsync({ from: uri, to: writableUri });
   let shareUri = writableUri;
-  if (Platform.OS === "android") {
-    shareUri = await FileSystem.getContentUriAsync(writableUri);
-  }
 
   const sharingAvailable = await Sharing.isAvailableAsync();
   if (sharingAvailable) {
